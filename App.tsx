@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import "react-native-gesture-handler";
+import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import RootNavigator from "./components/navigation/RootNavigator";
+import { useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import useAuthStore from "./store/useAuthStore";
+import { ActivityIndicator, View, StyleSheet } from "react-native";
 
 export default function App() {
+  const { login, isLoading, setIsLoading } = useAuthStore();
+
+  useEffect(() => {
+    const verifyUserIsAuthenticated = async () => {
+      try {
+        // Se verifica que usuario esté logueado al abrir la app
+        const token = await AsyncStorage.getItem("token");
+        const email = await AsyncStorage.getItem("email");
+
+        if (token !== null && email !== null) {
+          login(token, email);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyUserIsAuthenticated();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      {isLoading ? (
+        <View style={styles.containerContentCenter}>
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      )}
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerContentCenter: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
