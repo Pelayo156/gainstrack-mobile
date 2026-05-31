@@ -1,11 +1,11 @@
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import RootNavigator from "./components/navigation/RootNavigator";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import useAuthStore from "./store/useAuthStore";
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import LoadingSpinner from "./src/components/ui/LoadingSpinner";
+import RootNavigator from "./src/components/navigation/RootNavigator";
+import useAuthStore from "./src/store/useAuthStore";
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
@@ -33,9 +33,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       {isLoading ? (
-        <View style={styles.containerContentCenter}>
-          <ActivityIndicator />
-        </View>
+        <LoadingSpinner />
       ) : (
         <NavigationContainer>
           <RootNavigator />
@@ -44,11 +42,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  containerContentCenter: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
