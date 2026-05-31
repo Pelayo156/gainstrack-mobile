@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Modal,
+  StyleSheet,
 } from "react-native";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/useAuthStore";
@@ -50,12 +51,20 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView>
-      <Text>Email</Text>
-      <TextInput value={email} onChangeText={(text) => setEmail(text)} />
+    <KeyboardAvoidingView style={styles.container}>
+      <Text style={styles.inputLabel}>Email</Text>
+      <TextInput
+        value={email}
+        onChangeText={(text) => setEmail(text)}
+        style={styles.input}
+      />
 
-      <Text>Constraseña</Text>
-      <TextInput value={password} onChangeText={(text) => setPassword(text)} />
+      <Text style={styles.inputLabel}>Constraseña</Text>
+      <TextInput
+        value={password}
+        onChangeText={(text) => setPassword(text)}
+        style={styles.input}
+      />
 
       {errorMessage !== null && <Text>*{errorMessage}</Text>}
 
@@ -69,3 +78,20 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: "20%",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "stretch",
+  },
+  input: {
+    width: "100%",
+    padding: 4,
+    borderColor: "#3498db",
+    borderWidth: 2,
+    borderRadius: 8,
+  },
+  inputLabel: {},
+});
