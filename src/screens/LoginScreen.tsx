@@ -7,14 +7,18 @@ import {
   TouchableOpacity,
   Modal,
   StyleSheet,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { LinearGradient } from "expo-linear-gradient";
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }: any) {
   const { login } = useAuthStore();
 
   const [email, setEmail] = useState<string>("");
@@ -51,31 +55,57 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      <Text style={styles.inputLabel}>Email</Text>
-      <TextInput
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-        style={styles.input}
-      />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <LinearGradient colors={["#0a0a0a", "#1a1a2e"]} style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          <Text style={styles.textTitle}>GainsTrack</Text>
 
-      <Text style={styles.inputLabel}>Constraseña</Text>
-      <TextInput
-        value={password}
-        onChangeText={(text) => setPassword(text)}
-        style={styles.input}
-      />
+          <View style={styles.containerInputLabel}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              placeholder="example@domain.cl"
+              placeholderTextColor="#666"
+              style={styles.input}
+            />
+          </View>
 
-      {errorMessage !== null && <Text>*{errorMessage}</Text>}
+          <View style={styles.containerInputLabel}>
+            <Text style={styles.inputLabel}>Constraseña</Text>
+            <TextInput
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+              secureTextEntry={true}
+              style={styles.input}
+            />
+          </View>
 
-      <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
-        <Text>Iniciar sesión</Text>
-      </TouchableOpacity>
+          {errorMessage !== null && (
+            <Text style={styles.errorText}>*{errorMessage}</Text>
+          )}
 
-      <Modal visible={isLoading} transparent>
-        <LoadingSpinner />
-      </Modal>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={isLoading}
+            style={styles.loginButton}
+          >
+            <Text style={styles.loginButtonText}>Iniciar sesión</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+            <Text>¿No tienes cuenta? Regístrate</Text>
+          </TouchableOpacity>
+
+          <Modal visible={isLoading} transparent>
+            <LoadingSpinner />
+          </Modal>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -85,13 +115,48 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "stretch",
+    gap: 20,
+  },
+  containerInputLabel: {
+    gap: 5,
+  },
+  textTitle: {
+    marginBottom: 40,
+    color: "#007bff",
+    fontFamily: "Inter-Bold",
+    fontSize: 40,
   },
   input: {
     width: "100%",
-    padding: 4,
-    borderColor: "#3498db",
+    padding: 12,
+    backgroundColor: "#1a1a1a",
+    color: "white",
+    borderColor: "#333",
     borderWidth: 2,
     borderRadius: 8,
   },
-  inputLabel: {},
+  inputLabel: {
+    color: "white",
+    fontSize: 16,
+    fontFamily: "Inter-Bold",
+  },
+  loginButton: {
+    width: "100%",
+    padding: 18,
+    marginTop: 10,
+    backgroundColor: "#007bff",
+    borderRadius: 12,
+  },
+  loginButtonText: {
+    color: "white",
+    fontWeight: 700,
+    textAlign: "center",
+    fontSize: 15,
+    fontFamily: "Inter-Bold",
+  },
+  errorText: {
+    color: "red",
+    fontWeight: 700,
+    fontSize: 12,
+  },
 });

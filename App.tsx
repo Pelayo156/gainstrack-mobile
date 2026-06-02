@@ -6,9 +6,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from "./src/components/ui/LoadingSpinner";
 import RootNavigator from "./src/components/navigation/RootNavigator";
 import useAuthStore from "./src/store/useAuthStore";
+import { useFonts } from "expo-font";
+import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
+  const [fontsLoaded] = useFonts({
+    "Inter-Regular": Inter_400Regular,
+    "Inter-Bold": Inter_700Bold,
+  });
 
   useEffect(() => {
     const verifyUserIsAuthenticated = async () => {
@@ -30,15 +36,13 @@ export default function App() {
     verifyUserIsAuthenticated();
   }, []);
 
+  if (!fontsLoaded || isLoading) return <LoadingSpinner />;
+
   return (
     <SafeAreaProvider>
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      )}
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
