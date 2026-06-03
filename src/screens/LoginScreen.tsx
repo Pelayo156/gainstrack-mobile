@@ -97,7 +97,9 @@ export default function LoginScreen({ navigation }: any) {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-            <Text>¿No tienes cuenta? Regístrate</Text>
+            <Text style={styles.registerText}>
+              ¿No tienes cuenta? Regístrate
+            </Text>
           </TouchableOpacity>
 
           <Modal visible={isLoading} transparent>
@@ -112,6 +114,7 @@ export default function LoginScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: "20%",
+    marginBottom: "10%",
     flex: 1,
     justifyContent: "center",
     alignItems: "stretch",
@@ -122,7 +125,7 @@ const styles = StyleSheet.create({
   },
   textTitle: {
     marginBottom: 40,
-    color: "#007bff",
+    color: "#F5F5F5",
     fontFamily: "Inter-Bold",
     fontSize: 40,
   },
@@ -133,7 +136,7 @@ const styles = StyleSheet.create({
     color: "white",
     borderColor: "#333",
     borderWidth: 2,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   inputLabel: {
     color: "white",
@@ -158,5 +161,9 @@ const styles = StyleSheet.create({
     color: "red",
     fontWeight: 700,
     fontSize: 12,
+  },
+  registerText: {
+    color: "white",
+    textAlign: "center",
   },
 });
