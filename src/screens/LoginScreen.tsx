@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
@@ -46,6 +46,10 @@ export default function LoginScreen({ navigation }: any) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    console.log("INICIO LOGIN GOOGLE");
   };
 
   return (
@@ -133,6 +137,17 @@ export default function LoginScreen({ navigation }: any) {
               ¿No tienes cuenta? Regístrate
             </Text>
           </TouchableOpacity>
+
+          <View style={styles.socialContainer}>
+            <Text style={styles.socialLabel}>o continúa con</Text>
+            <TouchableOpacity
+              onPress={handleGoogleLogin}
+              style={styles.googleButton}
+              activeOpacity={0.8}
+            >
+              <AntDesign name="google" size={22} color="#EA4335" />
+            </TouchableOpacity>
+          </View>
         </KeyboardAvoidingView>
 
         <Modal visible={isLoading} transparent>
@@ -228,5 +243,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 13,
     marginTop: 4,
+  },
+  socialContainer: {
+    alignItems: "center",
+    gap: 14,
+    marginTop: 8,
+  },
+  socialLabel: {
+    color: "rgba(255,255,255,0.2)",
+    fontSize: 11,
+    letterSpacing: 2,
+  },
+  googleButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -12,6 +12,7 @@ export interface APIGainstrackLoginRequest {
 }
 
 export interface APIGainstrackRegisterRequest {
+  name: string;
   email: string;
   password: string;
 }

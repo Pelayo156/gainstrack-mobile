@@ -19,6 +19,7 @@ import { authService } from "../services/authService";
 
 export default function RegisterScreen() {
   const { login } = useAuthStore();
+  const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -36,6 +37,7 @@ export default function RegisterScreen() {
         setErrorMessages(["Contraseñas no coinciden"]);
       } else {
         const response = await authService.register({
+          name: name,
           email: email,
           password: password,
         });
@@ -73,6 +75,28 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.card}>
+            <View style={styles.inputRow}>
+              <Ionicons
+                name="person-outline"
+                size={18}
+                color="rgba(255,255,255,0.4)"
+                style={styles.icon}
+              />
+              <TextInput
+                value={name}
+                onChangeText={(text) => {
+                  setName(text);
+                  setErrorMessages([]);
+                }}
+                placeholder="Nombre"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                style={styles.input}
+                autoCapitalize="words"
+              />
+            </View>
+
+            <View style={styles.divider} />
+
             <View style={styles.inputRow}>
               <Ionicons
                 name="mail-outline"
