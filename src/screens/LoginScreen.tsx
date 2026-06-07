@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
@@ -27,17 +28,10 @@ export default function LoginScreen({ navigation }: any) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    console.log("INICIO LOGIN");
-
     setIsLoading(true);
     try {
       if (email.length > 0 && password.length > 0) {
-        const response = await authService.login({
-          email: email,
-          password: password,
-        });
-        console.log(response);
-
+        const response = await authService.login({ email, password });
         login(response.token, email);
       } else {
         setErrorMessage("Campos no pueden estar vacíos");
@@ -56,56 +50,94 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <LinearGradient colors={["#0a0a0a", "#1a1a2e"]} style={{ flex: 1 }}>
+      <LinearGradient colors={["#080808", "#0f0f14"]} style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
         >
-          <Text style={styles.textTitle}>GainsTrack</Text>
-
-          <View style={styles.containerInputLabel}>
-            <Text style={styles.inputLabel}>Email</Text>
-            <TextInput
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              placeholder="example@domain.cl"
-              placeholderTextColor="#666"
-              style={styles.input}
-            />
+          <View style={styles.header}>
+            <Text style={styles.textTitle}>GainsTrack</Text>
+            <Text style={styles.textSubtitle}>CONTROLA TU PROGRESO</Text>
           </View>
 
-          <View style={styles.containerInputLabel}>
-            <Text style={styles.inputLabel}>Constraseña</Text>
-            <TextInput
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-              secureTextEntry={true}
-              style={styles.input}
-            />
+          <View style={styles.card}>
+            <View style={styles.inputRow}>
+              <Ionicons
+                name="mail-outline"
+                size={18}
+                color="rgba(255,255,255,0.4)"
+                style={styles.icon}
+              />
+              <TextInput
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setErrorMessage(null);
+                }}
+                placeholder="Correo electrónico"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.inputRow}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={18}
+                color="rgba(255,255,255,0.4)"
+                style={styles.icon}
+              />
+              <TextInput
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrorMessage(null);
+                }}
+                placeholder="Contraseña"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                secureTextEntry
+                style={styles.input}
+              />
+            </View>
           </View>
 
           {errorMessage !== null && (
-            <Text style={styles.errorText}>*{errorMessage}</Text>
+            <View style={styles.errorBanner}>
+              <Ionicons
+                name="alert-circle-outline"
+                size={18}
+                color="rgba(255,90,90,0.9)"
+              />
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
           )}
 
           <TouchableOpacity
             onPress={handleLogin}
             disabled={isLoading}
             style={styles.loginButton}
+            activeOpacity={0.7}
           >
             <Text style={styles.loginButtonText}>Iniciar sesión</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Register")}
+            activeOpacity={0.6}
+          >
             <Text style={styles.registerText}>
               ¿No tienes cuenta? Regístrate
             </Text>
           </TouchableOpacity>
-
-          <Modal visible={isLoading} transparent>
-            <LoadingSpinner />
-          </Modal>
         </KeyboardAvoidingView>
+
+        <Modal visible={isLoading} transparent>
+          <LoadingSpinner />
+        </Modal>
       </LinearGradient>
     </TouchableWithoutFeedback>
   );
@@ -113,57 +145,88 @@ export default function LoginScreen({ navigation }: any) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: "20%",
-    marginBottom: "10%",
     flex: 1,
     justifyContent: "center",
-    alignItems: "stretch",
-    gap: 20,
+    paddingHorizontal: 32,
+    gap: 16,
   },
-  containerInputLabel: {
-    gap: 5,
+  header: {
+    alignItems: "center",
+    marginBottom: 20,
   },
   textTitle: {
-    marginBottom: 40,
-    color: "#F5F5F5",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
-    fontSize: 40,
+    fontSize: 38,
+    letterSpacing: 1.5,
+  },
+  textSubtitle: {
+    color: "rgba(255,255,255,0.3)",
+    fontSize: 11,
+    letterSpacing: 3,
+    marginTop: 8,
+  },
+  card: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.09)",
+    borderWidth: 1,
+    borderRadius: 18,
+    overflow: "hidden",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  icon: {
+    marginRight: 14,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    marginHorizontal: 20,
   },
   input: {
-    width: "100%",
-    padding: 12,
-    backgroundColor: "#1a1a1a",
-    color: "white",
-    borderColor: "#333",
-    borderWidth: 2,
-    borderRadius: 10,
-  },
-  inputLabel: {
-    color: "white",
-    fontSize: 16,
-    fontFamily: "Inter-Bold",
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 15,
   },
   loginButton: {
-    width: "100%",
-    padding: 18,
-    marginTop: 10,
-    backgroundColor: "#007bff",
-    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.09)",
+    borderColor: "rgba(255,255,255,0.14)",
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 18,
+    marginTop: 6,
   },
   loginButtonText: {
-    color: "white",
-    fontWeight: 700,
-    textAlign: "center",
-    fontSize: 15,
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
+    fontSize: 15,
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "rgba(255,60,60,0.08)",
+    borderColor: "rgba(255,60,60,0.2)",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   errorText: {
-    color: "red",
-    fontWeight: 700,
-    fontSize: 12,
+    flex: 1,
+    color: "rgba(255,90,90,0.95)",
+    fontSize: 14,
   },
   registerText: {
-    color: "white",
+    color: "rgba(255,255,255,0.3)",
     textAlign: "center",
+    fontSize: 13,
+    marginTop: 4,
   },
 });
