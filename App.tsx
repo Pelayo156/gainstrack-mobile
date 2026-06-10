@@ -1,6 +1,9 @@
 import "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from "./src/components/ui/LoadingSpinner";
@@ -8,6 +11,19 @@ import RootNavigator from "./src/components/navigation/RootNavigator";
 import useAuthStore from "./src/store/useAuthStore";
 import { useFonts } from "expo-font";
 import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
+import Toast from "react-native-toast-message";
+
+function AppContent() {
+  const insets = useSafeAreaInsets();
+  return (
+    <>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+      <Toast topOffset={insets.top + 10} />
+    </>
+  );
+}
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
@@ -40,9 +56,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
+      <AppContent />
     </SafeAreaProvider>
   );
 }

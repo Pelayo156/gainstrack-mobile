@@ -11,11 +11,14 @@ import {
   Platform,
   TextInput,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import useAuthStore from "../store/useAuthStore";
 import { authService } from "../services/authService";
+import Toast from "react-native-toast-message";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 export default function RegisterScreen() {
   const { login } = useAuthStore();
@@ -44,6 +47,11 @@ export default function RegisterScreen() {
         console.log(response);
 
         login(response.token, email);
+        Toast.show({
+          type: "success",
+          text1: "Cuenta creada",
+          text2: "¡Bienvenido a GainsTrack!",
+        });
       }
     } catch (error) {
       console.error(error);
@@ -183,6 +191,9 @@ export default function RegisterScreen() {
             <Text style={styles.registerButtonText}>Registrarse</Text>
           </TouchableOpacity>
         </KeyboardAvoidingView>
+        <Modal visible={isLoading} transparent>
+          <LoadingSpinner />
+        </Modal>
       </LinearGradient>
     </TouchableWithoutFeedback>
   );
