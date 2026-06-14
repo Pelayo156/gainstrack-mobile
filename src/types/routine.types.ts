@@ -5,3 +5,8 @@ export interface APIGainstrackRoutineSummaryResponse {
   notes: null | string;
   isFree: boolean;
 }
+
+export interface APIGainstrackSaveRoutineRequest {
+  name: string;
+  notes: string;
+}

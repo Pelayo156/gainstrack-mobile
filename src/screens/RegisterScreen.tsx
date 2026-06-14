@@ -249,15 +249,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   registerButton: {
-    backgroundColor: "rgba(255,255,255,0.09)",
-    borderColor: "rgba(255,255,255,0.14)",
-    borderWidth: 1,
+    backgroundColor: "#FAD141",
     borderRadius: 14,
     paddingVertical: 18,
     marginTop: 6,
   },
   registerButtonText: {
-    color: "#FFFFFF",
+    color: "#080808",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     textAlign: "center",
