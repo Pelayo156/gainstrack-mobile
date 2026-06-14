@@ -15,4 +15,7 @@ export const routineService = {
     const response = await apiClient.post("/routines", saveRequest);
     return response.data;
   },
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/routines/${id}`);
+  },
 };
