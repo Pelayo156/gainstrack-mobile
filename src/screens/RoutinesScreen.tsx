@@ -34,7 +34,7 @@ function formatDate(date: Date): string {
   });
 }
 
-export default function RoutineScreen() {
+export default function RoutineScreen({ navigation }: any) {
   const { logout } = useAuthStore();
   const { width } = useWindowDimensions();
 
@@ -49,9 +49,10 @@ export default function RoutineScreen() {
   const [routineName, setRoutineName] = useState<string>("");
   const [routineNotes, setRoutineNotes] = useState<string>("");
 
-  const [routineOpenOptionsId, setRoutineOpenOptionsId] = useState<
-    number | null
-  >(null);
+  const [routineSelected, setRoutineSelected] =
+    useState<APIGainstrackRoutineSummaryResponse | null>(null);
+
+  const [isOptionsVisibles, setIsOptionVisibles] = useState<boolean>(false);
 
   const cardSize = width - H_PADDING * 2;
 
@@ -127,8 +128,33 @@ export default function RoutineScreen() {
     setIsCreateRoutineModalOpen(false);
   };
 
-  const handleOpenRoutineOptions = (routineId: number) => {
-    setRoutineOpenOptionsId(routineId);
+  const handleDeleteRoutine = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    if (routineSelected == null) {
+      setErrorMessage("No se ha seleccionado una rutina para eliminar");
+      return;
+    }
+
+    try {
+      await routineService.delete(routineSelected?.id);
+      fetchRoutines();
+
+      Toast.show({
+        type: "success",
+        text1: `Rutina ${routineSelected?.name} eliminada`,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as APIGainstrackErrorResponse;
+        setErrorMessage(apiError.message);
+      } else {
+        setErrorMessage("Error inesperado, intente nuevamente");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -194,12 +220,16 @@ export default function RoutineScreen() {
                   {routine.name}
                 </Text>
                 <Popover
+                  isVisible={
+                    routineSelected?.id === routine.id && isOptionsVisibles
+                  }
+                  onRequestClose={() => setIsOptionVisibles(false)}
                   from={(sourceRef, showPopover) => (
                     <TouchableOpacity
                       ref={sourceRef as any}
                       onPress={() => {
-                        setRoutineOpenOptionsId(routine.id);
-                        showPopover();
+                        setRoutineSelected(routine);
+                        setIsOptionVisibles(true);
                       }}
                       style={styles.optionsButton}
                       activeOpacity={0.6}
@@ -218,6 +248,12 @@ export default function RoutineScreen() {
                     <TouchableOpacity
                       style={styles.popoverItem}
                       activeOpacity={0.7}
+                      onPress={() => {
+                        setIsOptionVisibles(false);
+                        navigation.navigate("EditRoutine", {
+                          routineId: routine.id,
+                        });
+                      }}
                     >
                       <Ionicons
                         name="create-outline"
@@ -240,6 +276,7 @@ export default function RoutineScreen() {
                     </TouchableOpacity>
                     <View style={styles.popoverDivider} />
                     <TouchableOpacity
+                      onPress={handleDeleteRoutine}
                       style={styles.popoverItem}
                       activeOpacity={0.7}
                     >
