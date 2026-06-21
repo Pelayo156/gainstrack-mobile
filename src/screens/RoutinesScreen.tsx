@@ -181,7 +181,7 @@ export default function RoutineScreen({ navigation }: any) {
 
             {isLoading && (
               <ActivityIndicator
-                color="#FAD141"
+                color="#E3B341"
                 size="large"
                 style={{ marginTop: 40 }}
               />
@@ -310,7 +310,7 @@ export default function RoutineScreen({ navigation }: any) {
         )}
         ListFooterComponent={
           <TouchableOpacity onPress={logout} style={styles.startButton}>
-            <Text>Cerrar Sesión</Text>
+            <Text style={styles.startButtonText}>Cerrar Sesión</Text>
           </TouchableOpacity>
         }
       />
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   createButton: {
-    backgroundColor: "#FAD141",
+    backgroundColor: "#E3B341",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   startButton: {
-    backgroundColor: "#FAD141",
+    backgroundColor: "#E3B341",
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",

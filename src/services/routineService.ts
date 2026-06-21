@@ -1,4 +1,5 @@
 import {
+  APIGainsTrackRoutineDetailResponse,
   APIGainstrackRoutineSummaryResponse,
   APIGainstrackSaveRoutineRequest,
 } from "../types/routine.types";
@@ -17,5 +18,9 @@ export const routineService = {
   },
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/routines/${id}`);
+  },
+  findById: async (id: number): Promise<APIGainsTrackRoutineDetailResponse> => {
+    const response = await apiClient.get(`/routines/${id}`);
+    return response.data;
   },
 };
