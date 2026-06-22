@@ -1,4 +1,4 @@
-export interface MuscleGroup {
+export interface APIGainsTrackMuscleGroupResponse {
   id: number;
   name: string;
 }
