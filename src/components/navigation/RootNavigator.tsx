@@ -50,7 +50,8 @@ export default function RootNavigator() {
             <Ionicons name="barbell-outline" size={size} color={color} />
           ),
           tabBarStyle:
-            getFocusedRouteNameFromRoute(route) === "EditRoutine"
+            getFocusedRouteNameFromRoute(route) === "EditRoutine" ||
+            getFocusedRouteNameFromRoute(route) === "ExercisePicker"
               ? { display: "none" }
               : TAB_BAR_STYLE,
         })}

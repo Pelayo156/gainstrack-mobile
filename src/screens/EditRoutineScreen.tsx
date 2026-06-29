@@ -17,6 +17,7 @@ import { APIGainsTrackRoutineDetailResponse } from "../types/routine.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import Toast from "react-native-toast-message";
+import Popover from "react-native-popover-view";
 
 const H_PADDING = 20;
 
@@ -29,6 +30,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
+  const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     console.log("INICIO VISTA EDITAR RUTINA");
@@ -69,11 +73,11 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           for (const set of exercise.sets) {
             // Busco el set correspondiente en la rutina orignal para comparar si es que hubieron cambios
             const originalExercise = originalRoutine?.exercises.find(
-              (originalExercise) => originalExercise.id === exercise.id,
+              (originalExercise) => originalExercise.id === exercise.id
             );
 
             const originalSet = originalExercise?.sets.find(
-              (originalSet) => originalSet.id === set.id,
+              (originalSet) => originalSet.id === set.id
             );
 
             if (
@@ -83,7 +87,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               await routineService.updateExerciseSet(
                 routine.id,
                 exercise.id,
-                set,
+                set
               );
             }
           }
@@ -110,7 +114,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string,
+    newWeight: string
   ) => {
     if (routine === null) return;
 
@@ -127,9 +131,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       weight: parseFloat(newWeight) || 0,
-                    },
+                    }
               ),
-            },
+            }
       ),
     });
   };
@@ -137,7 +141,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string,
+    newReps: string
   ) => {
     if (routine === null) return;
 
@@ -154,11 +158,47 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       reps: parseFloat(newReps) || 0,
-                    },
+                    }
               ),
-            },
+            }
       ),
     });
+  };
+
+  const handleDeleteRoutineExercise = async () => {
+    console.log(
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId}`
+    );
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    if (openExerciseMenuId == null) {
+      setErrorMessage("Ejercicio inválido. Intente nuevamente");
+      return;
+    }
+
+    try {
+      const response = await routineService.deleteExerciseById(
+        routineId,
+        openExerciseMenuId
+      );
+      setOriginalRoutine(response);
+      setRoutine(response);
+
+      Toast.show({
+        type: "success",
+        text1: "Ejercicio Eliminado",
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as APIGainstrackErrorResponse;
+        setErrorMessage(apiError.message);
+      } else {
+        setErrorMessage("Error inesperado, intente nuevamente");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -257,6 +297,43 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                       {routineExercise.orderIndex}
                     </Text>
                   </View>
+                  <Popover
+                    isVisible={openExerciseMenuId === routineExercise.id}
+                    onRequestClose={() => setOpenExerciseMenuId(null)}
+                    from={(sourceRef, showPopover) => (
+                      <TouchableOpacity
+                        ref={sourceRef as any}
+                        onPress={() =>
+                          setOpenExerciseMenuId(routineExercise.id)
+                        }
+                        style={styles.exerciseOptionsButton}
+                        activeOpacity={0.6}
+                      >
+                        <Ionicons
+                          name="ellipsis-vertical"
+                          size={18}
+                          color="rgba(255,255,255,0.45)"
+                        />
+                      </TouchableOpacity>
+                    )}
+                    popoverStyle={styles.popover}
+                    backgroundStyle={{ backgroundColor: "transparent" }}
+                  >
+                    <View style={styles.popoverMenu}>
+                      <TouchableOpacity
+                        style={styles.popoverItem}
+                        activeOpacity={0.7}
+                        onPress={() => handleDeleteRoutineExercise()}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={16}
+                          color="rgba(255,75,75,0.9)"
+                        />
+                        <Text style={styles.popoverItemDanger}>Eliminar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </Popover>
                 </View>
 
                 <View style={styles.exerciseNotesRow}>
@@ -299,7 +376,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetWeight(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newWeight,
+                                newWeight
                               )
                             }
                             keyboardType="decimal-pad"
@@ -316,7 +393,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetReps(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newReps,
+                                newReps
                               )
                             }
                             keyboardType="number-pad"
@@ -344,6 +421,21 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 </View>
               </View>
             ))}
+
+            <TouchableOpacity
+              style={styles.addExerciseButton}
+              activeOpacity={0.8}
+              onPress={() => {
+                navigation.navigate("ExercisePicker", {
+                  routineId: routine.id,
+                });
+              }}
+            >
+              <Ionicons name="add" size={20} color="#E3B341" />
+              <Text style={styles.addExerciseButtonText}>
+                Agregar ejercicio
+              </Text>
+            </TouchableOpacity>
           </ScrollView>
         </TouchableWithoutFeedback>
       )}
@@ -470,6 +562,9 @@ const styles = StyleSheet.create({
   exerciseHeaderInfo: {
     flex: 1,
     gap: 8,
+  },
+  exerciseOptionsButton: {
+    padding: 4,
   },
   exerciseName: {
     color: "#FFFFFF",
@@ -598,5 +693,51 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "rgba(255,255,255,0.6)",
     fontSize: 12,
+  },
+  popover: {
+    backgroundColor: "#0a0a10",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.55,
+    shadowRadius: 16,
+    elevation: 12,
+    overflow: "hidden",
+    padding: 0,
+  },
+  popoverMenu: {
+    minWidth: 170,
+  },
+  popoverItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  popoverItemDanger: {
+    color: "rgba(255,75,75,0.9)",
+    fontSize: 14,
+    letterSpacing: 0.2,
+  },
+  addExerciseButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "rgba(227,179,65,0.08)",
+    borderColor: "rgba(227,179,65,0.3)",
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginTop: 4,
+  },
+  addExerciseButtonText: {
+    color: "#E3B341",
+    fontFamily: "Inter-Bold",
+    fontSize: 15,
+    letterSpacing: 0.5,
   },
 });

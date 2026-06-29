@@ -1,6 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import RoutineScreen from "../../screens/RoutinesScreen";
 import EditRoutineScreen from "../../screens/EditRoutineScreen";
+import ExercisePickerScreen from "@/src/screens/ExercisePickerScreen";
 
 const Stack = createStackNavigator();
 
@@ -15,6 +16,11 @@ export default function RoutineStackNavigator() {
       <Stack.Screen
         name="EditRoutine"
         component={EditRoutineScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ExercisePicker"
+        component={ExercisePickerScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
