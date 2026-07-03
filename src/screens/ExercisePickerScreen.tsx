@@ -14,20 +14,22 @@ import { exerciseService } from "../services/exerciseService";
 import { APIGainsTrackExerciseResponse } from "../types/exercise.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
+import { routineService } from "../services/routineService";
+import Toast from "react-native-toast-message";
 
 const H_PADDING = 20;
 
 export default function ExercisePickerScreen({ route, navigation }: any) {
-  const { routineId } = route.params;
+  const { routineId, nextOrderIndex } = route.params;
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [exercises, setExercises] = useState<APIGainsTrackExerciseResponse[]>(
-    []
+    [],
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -54,6 +56,43 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
     fetchRoutineById();
   }, []);
+
+  const handleAddExercise = async () => {
+    console.log("INICIO EVENTO PARA AGREGAR EJERCICIO");
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    if (selectedExerciseId == null) {
+      setErrorMessage("Debe seleccionar un ejercicio");
+      return;
+    }
+
+    try {
+      await routineService.saveExercise(routineId, {
+        exerciseId: selectedExerciseId,
+        orderIndex: nextOrderIndex,
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "Ejercicio añadido",
+      });
+
+      navigation.navigate("EditRoutine", {
+        routineId: routineId,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as APIGainstrackErrorResponse;
+        setErrorMessage(apiError.message);
+      } else {
+        setErrorMessage("Error inesperado, intente nuevamente");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <LinearGradient colors={["#080808", "#0f0f14"]} style={styles.flex}>
@@ -204,6 +243,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
           ]}
           activeOpacity={0.8}
           disabled={selectedExerciseId === null}
+          onPress={() => handleAddExercise()}
         >
           <Text
             style={[

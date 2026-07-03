@@ -1,6 +1,7 @@
 import {
   APIGainsTrackRoutineDetailResponse,
   APIGainstrackRoutineSummaryResponse,
+  APIGainsTrackSaveExerciseRoutine,
   APIGainstrackSaveRoutineRequest,
   Set,
 } from "../types/routine.types";
@@ -12,7 +13,7 @@ export const routineService = {
     return response.data;
   },
   save: async (
-    saveRequest: APIGainstrackSaveRoutineRequest
+    saveRequest: APIGainstrackSaveRoutineRequest,
   ): Promise<APIGainstrackRoutineSummaryResponse> => {
     const response = await apiClient.post("/routines", saveRequest);
     return response.data;
@@ -27,17 +28,27 @@ export const routineService = {
   updateExerciseSet: async (
     id: number,
     routineExerciseId: number,
-    routineExerciseSet: Set
+    routineExerciseSet: Set,
   ): Promise<APIGainsTrackRoutineDetailResponse> => {
     const response = await apiClient.patch(
       `/routines/${id}/exercises/${routineExerciseId}/sets/${routineExerciseSet.id}`,
-      routineExerciseSet
+      routineExerciseSet,
     );
     return response.data;
   },
   deleteExerciseById: async (id: number, exerciseId: number) => {
     const response = await apiClient.delete(
-      `/routines/${id}/exercises/${exerciseId}`
+      `/routines/${id}/exercises/${exerciseId}`,
+    );
+    return response.data;
+  },
+  saveExercise: async (
+    id: number,
+    saveRequest: APIGainsTrackSaveExerciseRoutine,
+  ): Promise<APIGainsTrackRoutineDetailResponse> => {
+    const response = await apiClient.post(
+      `/routines/${id}/exercises`,
+      saveRequest,
     );
     return response.data;
   },

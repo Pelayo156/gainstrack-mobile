@@ -31,7 +31,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -73,11 +73,11 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           for (const set of exercise.sets) {
             // Busco el set correspondiente en la rutina orignal para comparar si es que hubieron cambios
             const originalExercise = originalRoutine?.exercises.find(
-              (originalExercise) => originalExercise.id === exercise.id
+              (originalExercise) => originalExercise.id === exercise.id,
             );
 
             const originalSet = originalExercise?.sets.find(
-              (originalSet) => originalSet.id === set.id
+              (originalSet) => originalSet.id === set.id,
             );
 
             if (
@@ -87,7 +87,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               await routineService.updateExerciseSet(
                 routine.id,
                 exercise.id,
-                set
+                set,
               );
             }
           }
@@ -114,7 +114,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string
+    newWeight: string,
   ) => {
     if (routine === null) return;
 
@@ -131,9 +131,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       weight: parseFloat(newWeight) || 0,
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
@@ -141,7 +141,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string
+    newReps: string,
   ) => {
     if (routine === null) return;
 
@@ -158,16 +158,16 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       reps: parseFloat(newReps) || 0,
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
 
   const handleDeleteRoutineExercise = async () => {
     console.log(
-      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId}`
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId}`,
     );
     setIsLoading(true);
     setErrorMessage(null);
@@ -180,7 +180,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     try {
       const response = await routineService.deleteExerciseById(
         routineId,
-        openExerciseMenuId
+        openExerciseMenuId,
       );
       setOriginalRoutine(response);
       setRoutine(response);
@@ -376,7 +376,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetWeight(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newWeight
+                                newWeight,
                               )
                             }
                             keyboardType="decimal-pad"
@@ -393,7 +393,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetReps(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newReps
+                                newReps,
                               )
                             }
                             keyboardType="number-pad"
@@ -428,6 +428,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               onPress={() => {
                 navigation.navigate("ExercisePicker", {
                   routineId: routine.id,
+                  nextOrderIndex: routine.exercises.length + 1,
                 });
               }}
             >

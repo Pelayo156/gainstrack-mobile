@@ -37,3 +37,8 @@ export interface Set {
   reps: number;
   notes: null | string;
 }
+
+export interface APIGainsTrackSaveExerciseRoutine {
+  exerciseId: number;
+  orderIndex: number;
+}
