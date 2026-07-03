@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -18,6 +18,7 @@ import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
+import { useFocusEffect } from "@react-navigation/native";
 
 const H_PADDING = 20;
 
@@ -34,31 +35,32 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     null,
   );
 
-  useEffect(() => {
-    console.log("INICIO VISTA EDITAR RUTINA");
+  useFocusEffect(
+    useCallback(() => {
+      console.log("INICIO DE VISTA EDITAR RUTINA");
+      fetchRoutineById();
+    }, []),
+  );
 
-    const fetchRoutineById = async () => {
-      setIsLoading(true);
-      setErrorMessage(null);
+  const fetchRoutineById = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
 
-      try {
-        const response = await routineService.findById(routineId);
-        setOriginalRoutine(response);
-        setRoutine(response);
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          const apiError = error.response?.data as APIGainstrackErrorResponse;
-          setErrorMessage(apiError.message);
-        } else {
-          setErrorMessage("Error inesperado, intente nuevamente");
-        }
-      } finally {
-        setIsLoading(false);
+    try {
+      const response = await routineService.findById(routineId);
+      setOriginalRoutine(response);
+      setRoutine(response);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as APIGainstrackErrorResponse;
+        setErrorMessage(apiError.message);
+      } else {
+        setErrorMessage("Error inesperado, intente nuevamente");
       }
-    };
-
-    fetchRoutineById();
-  }, []);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSaveRoutine = async () => {
     console.log("INICIO EVENTO GUARDAR CAMBIOS RUTINA");

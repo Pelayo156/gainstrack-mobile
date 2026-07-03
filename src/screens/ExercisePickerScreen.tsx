@@ -35,7 +35,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
   useEffect(() => {
     console.log(`INICIO VISTA DE EJERCICIOS PARA RUTINA CON ID: ${routineId}`);
 
-    const fetchRoutineById = async () => {
+    const fetchExercises = async () => {
       setIsLoading(true);
       setErrorMessage(null);
 
@@ -54,7 +54,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
       }
     };
 
-    fetchRoutineById();
+    fetchExercises();
   }, []);
 
   const handleAddExercise = async () => {
@@ -79,9 +79,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
         text1: "Ejercicio añadido",
       });
 
-      navigation.navigate("EditRoutine", {
-        routineId: routineId,
-      });
+      navigation.goBack();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiError = error.response?.data as APIGainstrackErrorResponse;
