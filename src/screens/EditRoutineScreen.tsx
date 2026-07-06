@@ -19,11 +19,13 @@ import { APIGainstrackErrorResponse } from "../types/api.types";
 import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
+import useExercisePickerStore from "../store/useExercisePickerStore";
 
 const H_PADDING = 20;
 
 export default function EditRoutineScreen({ route, navigation }: any) {
   const { routineId } = route.params;
+  const { pickedExercise, clearPickedExercise } = useExercisePickerStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -32,14 +34,34 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
-    null,
+    null
   );
+
+  useEffect(() => {
+    console.log("INICIO DE VISTA EDITAR RUTINA");
+    fetchRoutineById();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      console.log("INICIO DE VISTA EDITAR RUTINA");
-      fetchRoutineById();
-    }, []),
+      if (pickedExercise !== null) {
+        console.log("CARGANDO EJERCICIO SELECCIONADO DE FORMA LOCAL");
+        setRoutine((prev) => ({
+          ...prev!,
+          exercises: [
+            ...prev!.exercises,
+            {
+              id: -Date.now(),
+              orderIndex: prev!.exercises.length + 1,
+              notes: "",
+              exercise: pickedExercise,
+              sets: [],
+            },
+          ],
+        }));
+        clearPickedExercise();
+      }
+    }, [pickedExercise])
   );
 
   const fetchRoutineById = async () => {
@@ -75,11 +97,11 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           for (const set of exercise.sets) {
             // Busco el set correspondiente en la rutina orignal para comparar si es que hubieron cambios
             const originalExercise = originalRoutine?.exercises.find(
-              (originalExercise) => originalExercise.id === exercise.id,
+              (originalExercise) => originalExercise.id === exercise.id
             );
 
             const originalSet = originalExercise?.sets.find(
-              (originalSet) => originalSet.id === set.id,
+              (originalSet) => originalSet.id === set.id
             );
 
             if (
@@ -89,7 +111,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               await routineService.updateExerciseSet(
                 routine.id,
                 exercise.id,
-                set,
+                set
               );
             }
           }
@@ -116,7 +138,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string,
+    newWeight: string
   ) => {
     if (routine === null) return;
 
@@ -133,9 +155,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       weight: parseFloat(newWeight) || 0,
-                    },
+                    }
               ),
-            },
+            }
       ),
     });
   };
@@ -143,7 +165,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string,
+    newReps: string
   ) => {
     if (routine === null) return;
 
@@ -160,47 +182,28 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       reps: parseFloat(newReps) || 0,
-                    },
+                    }
               ),
-            },
+            }
       ),
     });
   };
 
   const handleDeleteRoutineExercise = async () => {
     console.log(
-      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId}`,
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`
     );
+
     setIsLoading(true);
     setErrorMessage(null);
 
-    if (openExerciseMenuId == null) {
-      setErrorMessage("Ejercicio inválido. Intente nuevamente");
-      return;
-    }
-
-    try {
-      const response = await routineService.deleteExerciseById(
-        routineId,
-        openExerciseMenuId,
-      );
-      setOriginalRoutine(response);
-      setRoutine(response);
-
-      Toast.show({
-        type: "success",
-        text1: "Ejercicio Eliminado",
-      });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
-      } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    setRoutine((prev) => ({
+      ...prev!,
+      exercises: prev!.exercises.filter(
+        (exercise) => exercise.id !== openExerciseMenuId
+      ),
+    }));
+    setIsLoading(false);
   };
 
   return (
@@ -378,7 +381,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetWeight(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newWeight,
+                                newWeight
                               )
                             }
                             keyboardType="decimal-pad"
@@ -395,7 +398,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetReps(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newReps,
+                                newReps
                               )
                             }
                             keyboardType="number-pad"
@@ -421,6 +424,14 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     </View>
                   ))}
                 </View>
+
+                <TouchableOpacity
+                  style={styles.addSetButton}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="add" size={16} color="#E3B341" />
+                  <Text style={styles.addSetButtonText}>Agregar set</Text>
+                </TouchableOpacity>
               </View>
             ))}
 
@@ -430,7 +441,6 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               onPress={() => {
                 navigation.navigate("ExercisePicker", {
                   routineId: routine.id,
-                  nextOrderIndex: routine.exercises.length + 1,
                 });
               }}
             >
@@ -724,6 +734,24 @@ const styles = StyleSheet.create({
     color: "rgba(255,75,75,0.9)",
     fontSize: 14,
     letterSpacing: 0.2,
+  },
+  addSetButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "rgba(227,179,65,0.06)",
+    borderColor: "rgba(227,179,65,0.25)",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+  addSetButtonText: {
+    color: "#E3B341",
+    fontFamily: "Inter-Bold",
+    fontSize: 13,
+    letterSpacing: 0.5,
   },
   addExerciseButton: {
     flexDirection: "row",

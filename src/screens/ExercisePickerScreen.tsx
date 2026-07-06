@@ -14,23 +14,22 @@ import { exerciseService } from "../services/exerciseService";
 import { APIGainsTrackExerciseResponse } from "../types/exercise.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
-import { routineService } from "../services/routineService";
-import Toast from "react-native-toast-message";
+import useExercisePickerStore from "../store/useExercisePickerStore";
 
 const H_PADDING = 20;
 
 export default function ExercisePickerScreen({ route, navigation }: any) {
-  const { routineId, nextOrderIndex } = route.params;
+  const { routineId } = route.params;
+  const { setPickedExercise } = useExercisePickerStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [exercises, setExercises] = useState<APIGainsTrackExerciseResponse[]>(
-    [],
+    []
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
-    null,
-  );
+  const [selectedExercise, setSelectedExercise] =
+    useState<APIGainsTrackExerciseResponse | null>(null);
 
   useEffect(() => {
     console.log(`INICIO VISTA DE EJERCICIOS PARA RUTINA CON ID: ${routineId}`);
@@ -58,38 +57,19 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
   }, []);
 
   const handleAddExercise = async () => {
-    console.log("INICIO EVENTO PARA AGREGAR EJERCICIO");
+    console.log("INICIO EVENTO PARA AGREGAR EJERCICIO DE FORMA LOCAL");
 
     setIsLoading(true);
     setErrorMessage(null);
 
-    if (selectedExerciseId == null) {
+    if (selectedExercise == null) {
       setErrorMessage("Debe seleccionar un ejercicio");
       return;
     }
 
-    try {
-      await routineService.saveExercise(routineId, {
-        exerciseId: selectedExerciseId,
-        orderIndex: nextOrderIndex,
-      });
-
-      Toast.show({
-        type: "success",
-        text1: "Ejercicio añadido",
-      });
-
-      navigation.goBack();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
-      } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    setPickedExercise(selectedExercise);
+    setIsLoading(false);
+    navigation.goBack();
   };
 
   return (
@@ -175,11 +155,11 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
             </View>
           }
           renderItem={({ item: exercise }) => {
-            const isSelected = selectedExerciseId === exercise.id;
+            const isSelected = selectedExercise?.id === exercise.id;
             return (
               <TouchableOpacity
                 onPress={() =>
-                  setSelectedExerciseId(isSelected ? null : exercise.id)
+                  setSelectedExercise(isSelected ? null : exercise)
                 }
                 style={[
                   styles.exerciseCard,
@@ -237,16 +217,16 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
         <TouchableOpacity
           style={[
             styles.confirmButton,
-            selectedExerciseId === null && styles.confirmButtonDisabled,
+            selectedExercise === null && styles.confirmButtonDisabled,
           ]}
           activeOpacity={0.8}
-          disabled={selectedExerciseId === null}
+          disabled={selectedExercise === null}
           onPress={() => handleAddExercise()}
         >
           <Text
             style={[
               styles.confirmButtonText,
-              selectedExerciseId === null && styles.confirmButtonTextDisabled,
+              selectedExercise === null && styles.confirmButtonTextDisabled,
             ]}
           >
             Agregar ejercicio
