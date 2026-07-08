@@ -32,7 +32,7 @@ export default function RootNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: TAB_BAR_STYLE,
-        tabBarActiveTintColor: "#E3B341",
+        tabBarActiveTintColor: "#F7C536",
         tabBarInactiveTintColor: "rgba(255,255,255,0.3)",
         tabBarLabelStyle: TAB_BAR_LABEL_STYLE,
         headerShown: false,

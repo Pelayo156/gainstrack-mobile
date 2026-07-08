@@ -181,7 +181,7 @@ export default function RoutineScreen({ navigation }: any) {
 
             {isLoading && (
               <ActivityIndicator
-                color="#E3B341"
+                color="#F7C536"
                 size="large"
                 style={{ marginTop: 40 }}
               />
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   createButton: {
-    backgroundColor: "#E3B341",
+    backgroundColor: "#F7C536",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   startButton: {
-    backgroundColor: "#E3B341",
+    backgroundColor: "#F7C536",
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",

@@ -120,7 +120,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
       {isLoading && (
         <ActivityIndicator
-          color="#E3B341"
+          color="#F7C536"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -331,8 +331,8 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   exerciseCardSelected: {
-    backgroundColor: "rgba(227,179,65,0.08)",
-    borderColor: "rgba(227,179,65,0.5)",
+    backgroundColor: "rgba(247,197,54,0.08)",
+    borderColor: "rgba(247,197,54,0.5)",
   },
   exerciseInfo: {
     flex: 1,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   exerciseNameSelected: {
-    color: "#E3B341",
+    color: "#F7C536",
   },
   exerciseTagsRow: {
     flexDirection: "row",
@@ -353,19 +353,19 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(227,179,65,0.12)",
-    borderColor: "rgba(227,179,65,0.3)",
+    backgroundColor: "rgba(247,197,54,0.12)",
+    borderColor: "rgba(247,197,54,0.3)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillSelected: {
-    backgroundColor: "rgba(227,179,65,0.2)",
-    borderColor: "rgba(227,179,65,0.6)",
+    backgroundColor: "rgba(247,197,54,0.2)",
+    borderColor: "rgba(247,197,54,0.6)",
   },
   muscleGroupPillText: {
-    color: "#E3B341",
+    color: "#F7C536",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -394,8 +394,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   selectionCircleSelected: {
-    backgroundColor: "#E3B341",
-    borderColor: "#E3B341",
+    backgroundColor: "#F7C536",
+    borderColor: "#F7C536",
   },
   footer: {
     paddingHorizontal: H_PADDING,
@@ -404,13 +404,13 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(255,255,255,0.08)",
   },
   confirmButton: {
-    backgroundColor: "#E3B341",
+    backgroundColor: "#F7C536",
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
   },
   confirmButtonDisabled: {
-    backgroundColor: "rgba(227,179,65,0.2)",
+    backgroundColor: "rgba(247,197,54,0.2)",
   },
   confirmButtonText: {
     color: "#080808",
@@ -419,6 +419,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   confirmButtonTextDisabled: {
-    color: "rgba(227,179,65,0.5)",
+    color: "rgba(247,197,54,0.5)",
   },
 });

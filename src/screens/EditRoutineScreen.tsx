@@ -195,12 +195,62 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     );
 
     setIsLoading(true);
-    setErrorMessage(null);
 
     setRoutine((prev) => ({
       ...prev!,
-      exercises: prev!.exercises.filter(
-        (exercise) => exercise.id !== openExerciseMenuId
+      exercises: prev!.exercises
+        .filter((exercise) => exercise.id !== openExerciseMenuId)
+        .map((exercise, index) => ({
+          ...exercise,
+          orderIndex: index + 1,
+        })),
+    }));
+    setIsLoading(false);
+  };
+
+  const handleDeleteSet = (routineExerciseId: number, setId: number) => {
+    console.log("INICIO EVENTO ELIMINAR SET DE EJERCICIO");
+
+    setIsLoading(true);
+    setRoutine((prev) => ({
+      ...prev!,
+      exercises: prev!.exercises.map((exercise) =>
+        exercise.id != routineExerciseId
+          ? exercise
+          : {
+              ...exercise,
+              sets: exercise.sets
+                .filter((set) => set.id !== setId)
+                .map((set, index) => ({ ...set, setNumber: index + 1 })),
+            }
+      ),
+    }));
+    setIsLoading(false);
+  };
+
+  const handleAddSet = async (routineExerciseId: number) => {
+    console.log("INICIO EVENTO AÑADIR SET A EJERCICIO");
+
+    setIsLoading(true);
+
+    setRoutine((prev) => ({
+      ...prev!,
+      exercises: prev!.exercises.map((exercise) =>
+        exercise.id !== routineExerciseId
+          ? exercise
+          : {
+              ...exercise,
+              sets: [
+                ...exercise.sets,
+                {
+                  id: -Date.now(),
+                  setNumber: exercise.sets.length + 1,
+                  weight: 0,
+                  reps: 0,
+                  notes: "",
+                },
+              ],
+            }
       ),
     }));
     setIsLoading(false);
@@ -211,10 +261,10 @@ export default function EditRoutineScreen({ route, navigation }: any) {
       <View style={styles.headerBar}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.headerIconButton}
+          style={styles.headerCancelButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          <Text style={styles.headerCancelButtonText}>Cancelar</Text>
         </TouchableOpacity>
         <Text style={styles.headerBarTitle} numberOfLines={1}>
           Editar rutina
@@ -224,13 +274,13 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           style={styles.headerIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="checkmark" size={24} color="#E3B341" />
+          <Ionicons name="checkmark" size={24} color="#F7C536" />
         </TouchableOpacity>
       </View>
 
       {isLoading && (
         <ActivityIndicator
-          color="#E3B341"
+          color="#F7C536"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -362,14 +412,32 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   {routineExercise.sets.map((routineExerciseSet) => (
                     <View key={routineExerciseSet.id} style={styles.setCard}>
                       <View style={styles.setHeaderRow}>
-                        <View style={styles.setBadge}>
-                          <Text style={styles.setBadgeText}>
-                            {routineExerciseSet.setNumber}
+                        <View style={styles.setHeaderInfo}>
+                          <View style={styles.setBadge}>
+                            <Text style={styles.setBadgeText}>
+                              {routineExerciseSet.setNumber}
+                            </Text>
+                          </View>
+                          <Text style={styles.setLabel}>
+                            SERIE {routineExerciseSet.setNumber}
                           </Text>
                         </View>
-                        <Text style={styles.setLabel}>
-                          SERIE {routineExerciseSet.setNumber}
-                        </Text>
+                        <TouchableOpacity
+                          style={styles.deleteSetButton}
+                          activeOpacity={0.7}
+                          onPress={() =>
+                            handleDeleteSet(
+                              routineExercise.id,
+                              routineExerciseSet.id
+                            )
+                          }
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={15}
+                            color="rgba(255,75,75,0.9)"
+                          />
+                        </TouchableOpacity>
                       </View>
 
                       <View style={styles.setInputsRow}>
@@ -428,8 +496,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 <TouchableOpacity
                   style={styles.addSetButton}
                   activeOpacity={0.8}
+                  onPress={() => handleAddSet(routineExercise.id)}
                 >
-                  <Ionicons name="add" size={16} color="#E3B341" />
+                  <Ionicons name="add" size={16} color="#F7C536" />
                   <Text style={styles.addSetButtonText}>Agregar set</Text>
                 </TouchableOpacity>
               </View>
@@ -444,7 +513,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 });
               }}
             >
-              <Ionicons name="add" size={20} color="#E3B341" />
+              <Ionicons name="add" size={20} color="#F7C536" />
               <Text style={styles.addExerciseButtonText}>
                 Agregar ejercicio
               </Text>
@@ -474,6 +543,20 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  headerCancelButton: {
+    paddingHorizontal: 14,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerCancelButtonText: {
+    color: "rgba(255,255,255,0.5)",
+    fontFamily: "Inter-Bold",
+    fontSize: 14,
+    letterSpacing: 0.3,
   },
   headerBarTitle: {
     flex: 1,
@@ -587,15 +670,15 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(227,179,65,0.12)",
-    borderColor: "rgba(227,179,65,0.3)",
+    backgroundColor: "rgba(247,197,54,0.12)",
+    borderColor: "rgba(247,197,54,0.3)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillText: {
-    color: "#E3B341",
+    color: "#F7C536",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -604,12 +687,14 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(247,197,54,0.1)",
+    borderColor: "rgba(247,197,54,0.25)",
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   exerciseOrderBadgeText: {
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(253,230,138,0.9)",
     fontSize: 12,
     fontFamily: "Inter-Bold",
   },
@@ -645,25 +730,38 @@ const styles = StyleSheet.create({
   setHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    justifyContent: "space-between",
     marginBottom: 10,
+  },
+  setHeaderInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  deleteSetButton: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,75,75,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   setBadge: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: "rgba(227,179,65,0.5)",
+    borderColor: "rgba(247,197,54,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   setBadgeText: {
-    color: "#E3B341",
+    color: "#F7C536",
     fontSize: 11,
     fontFamily: "Inter-Bold",
   },
   setLabel: {
-    color: "rgba(255,255,255,0.4)",
+    color: "rgba(253,230,138,0.65)",
     fontSize: 11,
     letterSpacing: 1.5,
     fontFamily: "Inter-Bold",
@@ -740,15 +838,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "rgba(227,179,65,0.06)",
-    borderColor: "rgba(227,179,65,0.25)",
+    backgroundColor: "rgba(247,197,54,0.06)",
+    borderColor: "rgba(247,197,54,0.25)",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 10,
     marginTop: 10,
   },
   addSetButtonText: {
-    color: "#E3B341",
+    color: "#F7C536",
     fontFamily: "Inter-Bold",
     fontSize: 13,
     letterSpacing: 0.5,
@@ -758,15 +856,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "rgba(227,179,65,0.08)",
-    borderColor: "rgba(227,179,65,0.3)",
+    backgroundColor: "rgba(247,197,54,0.08)",
+    borderColor: "rgba(247,197,54,0.3)",
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 4,
   },
   addExerciseButtonText: {
-    color: "#E3B341",
+    color: "#F7C536",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
