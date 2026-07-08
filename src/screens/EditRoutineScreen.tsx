@@ -34,7 +34,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         }));
         clearPickedExercise();
       }
-    }, [pickedExercise])
+    }, [pickedExercise]),
   );
 
   const fetchRoutineById = async () => {
@@ -84,61 +84,10 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     }
   };
 
-  const handleSaveRoutine = async () => {
-    console.log("INICIO EVENTO GUARDAR CAMBIOS RUTINA");
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      if (routine != null) {
-        // comienzo de actualización de rutina
-        for (const exercise of routine.exercises) {
-          for (const set of exercise.sets) {
-            // Busco el set correspondiente en la rutina orignal para comparar si es que hubieron cambios
-            const originalExercise = originalRoutine?.exercises.find(
-              (originalExercise) => originalExercise.id === exercise.id
-            );
-
-            const originalSet = originalExercise?.sets.find(
-              (originalSet) => originalSet.id === set.id
-            );
-
-            if (
-              set.reps !== originalSet?.reps ||
-              set.weight !== originalSet?.weight
-            ) {
-              await routineService.updateExerciseSet(
-                routine.id,
-                exercise.id,
-                set
-              );
-            }
-          }
-        }
-        setOriginalRoutine(routine);
-
-        Toast.show({
-          type: "success",
-          text1: "Rutina actualizada",
-        });
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
-      } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string
+    newWeight: string,
   ) => {
     if (routine === null) return;
 
@@ -155,9 +104,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       weight: parseFloat(newWeight) || 0,
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
@@ -165,7 +114,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string
+    newReps: string,
   ) => {
     if (routine === null) return;
 
@@ -182,16 +131,16 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       reps: parseFloat(newReps) || 0,
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
 
   const handleDeleteRoutineExercise = async () => {
     console.log(
-      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`,
     );
 
     setIsLoading(true);
@@ -222,7 +171,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               sets: exercise.sets
                 .filter((set) => set.id !== setId)
                 .map((set, index) => ({ ...set, setNumber: index + 1 })),
-            }
+            },
       ),
     }));
     setIsLoading(false);
@@ -250,10 +199,50 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   notes: "",
                 },
               ],
-            }
+            },
       ),
     }));
     setIsLoading(false);
+  };
+
+  const handleSaveRoutine = async () => {
+    console.log("INICIO EVENTO GUARDAR CAMBIOS RUTINA");
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    if (routine == null || originalRoutine == null) {
+      setErrorMessage("Hubo un problema al momento de actualizar la rutina.");
+      return;
+    }
+
+    // Ejercicios eliminados
+    const deletedExercises = originalRoutine!.exercises.filter(
+      (original) =>
+        !routine?.exercises.some((current) => current.id === original.id),
+    );
+
+    // Ejercicios nuevos
+    const newExercises = routine?.exercises.filter(
+      (exercise) => exercise.id < 0,
+    );
+
+    // Se eliminan ejercicios de la rutina desde el backend
+    await Promise.all(
+      deletedExercises.map((exercise) =>
+        routineService.deleteExerciseById(routineId, exercise.id),
+      ),
+    );
+
+    // Se agregn ejercicios nuevos a la rutina desde el backend
+    await Promise.all(
+      newExercises.map((routineExercise) =>
+        routineService.saveExercise(routineId, {
+          exerciseId: routineExercise.exercise.id,
+          orderIndex: routineExercise.orderIndex,
+        }),
+      ),
+    );
   };
 
   return (
@@ -428,7 +417,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                           onPress={() =>
                             handleDeleteSet(
                               routineExercise.id,
-                              routineExerciseSet.id
+                              routineExerciseSet.id,
                             )
                           }
                         >
@@ -449,7 +438,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetWeight(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newWeight
+                                newWeight,
                               )
                             }
                             keyboardType="decimal-pad"
@@ -466,7 +455,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                               handleUpdateSetReps(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newReps
+                                newReps,
                               )
                             }
                             keyboardType="number-pad"
