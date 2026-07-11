@@ -42,3 +42,10 @@ export interface APIGainsTrackSaveExerciseRoutine {
   exerciseId: number;
   orderIndex: number;
 }
+
+export interface APIGainstrackSaveRoutineExerciseSet {
+  setNumber: number;
+  weight: number;
+  reps: number;
+  notes: null | string;
+}

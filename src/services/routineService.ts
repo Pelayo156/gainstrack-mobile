@@ -2,7 +2,9 @@ import {
   APIGainsTrackRoutineDetailResponse,
   APIGainstrackRoutineSummaryResponse,
   APIGainsTrackSaveExerciseRoutine,
+  APIGainstrackSaveRoutineExerciseSet,
   APIGainstrackSaveRoutineRequest,
+  RoutineExercise,
   Set,
 } from "../types/routine.types";
 import apiClient from "./apiClient";
@@ -45,9 +47,20 @@ export const routineService = {
   saveExercise: async (
     id: number,
     saveRequest: APIGainsTrackSaveExerciseRoutine,
-  ): Promise<APIGainsTrackRoutineDetailResponse> => {
+  ): Promise<RoutineExercise> => {
     const response = await apiClient.post(
       `/routines/${id}/exercises`,
+      saveRequest,
+    );
+    return response.data;
+  },
+  saveSet: async (
+    id: number,
+    exerciseId: number,
+    saveRequest: APIGainstrackSaveRoutineExerciseSet,
+  ): Promise<APIGainsTrackRoutineDetailResponse> => {
+    const response = await apiClient.post(
+      `/routines/${id}/exercises/${exerciseId}/sets`,
       saveRequest,
     );
     return response.data;

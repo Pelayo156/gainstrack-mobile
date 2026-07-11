@@ -13,10 +13,12 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { routineService } from "../services/routineService";
-import { APIGainsTrackRoutineDetailResponse } from "../types/routine.types";
+import {
+  APIGainsTrackRoutineDetailResponse,
+  RoutineExercise,
+} from "../types/routine.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
-import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
 import useExercisePickerStore from "../store/useExercisePickerStore";
@@ -235,13 +237,54 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     );
 
     // Se agregn ejercicios nuevos a la rutina desde el backend
-    await Promise.all(
+    const createdExercises = await Promise.all(
       newExercises.map((routineExercise) =>
         routineService.saveExercise(routineId, {
           exerciseId: routineExercise.exercise.id,
           orderIndex: routineExercise.orderIndex,
         }),
       ),
+    );
+
+    // Se agregan set a ejercicios recien creados desde el backend
+    await Promise.all(
+      createdExercises.flatMap((createdExercise, index) =>
+        newExercises[index].sets.map((set) =>
+          routineService.saveSet(routineId, createdExercise.id, {
+            setNumber: set.setNumber,
+            weight: set.weight,
+            reps: set.reps,
+            notes: set.notes,
+          }),
+        ),
+      ),
+    );
+
+    // Se modifican set de ejercicios existentes dentro de la rutina
+    await Promise.all(
+      routine.exercises
+        .filter((exercise) => exercise.id > 0)
+        .flatMap((exercise) => {
+          const originalExercise = originalRoutine.exercises.find(
+            (original) => original.id == exercise.id,
+          );
+
+          return exercise.sets
+            .filter((set) => {
+              const originalSet = originalExercise?.sets.find(
+                (original) => original.id === set.id,
+              );
+
+              return (
+                set.reps !== originalSet?.reps ||
+                set.weight !== originalSet.weight ||
+                set.notes !== originalSet.notes
+              );
+            })
+            .map((set) =>
+              routineService.updateExerciseSet(routineId, exercise.id, set),
+            );
+        }),
     );
   };
 
