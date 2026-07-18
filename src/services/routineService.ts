@@ -65,7 +65,7 @@ export const routineService = {
     );
     return response.data;
   },
-  deleteSet: async (
+  deleteSetById: async (
     id: number,
     exerciseId: number,
     setId: number,
