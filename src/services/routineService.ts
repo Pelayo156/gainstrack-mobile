@@ -65,4 +65,14 @@ export const routineService = {
     );
     return response.data;
   },
+  deleteSet: async (
+    id: number,
+    exerciseId: number,
+    setId: number,
+  ): Promise<APIGainsTrackRoutineDetailResponse> => {
+    const response = await apiClient.delete(
+      `/routines/${id}/exercises/${exerciseId}/sets/${setId}`,
+    );
+    return response.data;
+  },
 };

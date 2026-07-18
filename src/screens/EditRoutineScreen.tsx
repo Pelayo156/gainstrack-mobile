@@ -269,21 +269,33 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             (original) => original.id == exercise.id,
           );
 
-          return exercise.sets
-            .filter((set) => {
-              const originalSet = originalExercise?.sets.find(
-                (original) => original.id === set.id,
-              );
+          // Sets eliminados
+          const deletedSets = originalExercise?.sets.filter(
+            (original) =>
+              !exercise.sets.some((current) => current.id == original.id),
+          );
 
-              return (
-                set.reps !== originalSet?.reps ||
-                set.weight !== originalSet.weight ||
-                set.notes !== originalSet.notes
-              );
-            })
-            .map((set) =>
-              routineService.updateExerciseSet(routineId, exercise.id, set),
+          // Sets nuevos
+          const newSets = exercise.sets.filter((set) => set.id < 0);
+
+          // Sets modificados
+          const modifiedSets = exercise.sets.filter((set) => {
+            const originalSet = originalExercise?.sets.find(
+              (original) => original.id == set.id,
             );
+
+            return (
+              set.reps !== originalSet?.reps ||
+              set.weight !== originalSet?.weight ||
+              set.notes !== originalSet?.notes
+            );
+          });
+
+          return [
+            ...deletedSets?.map((set) =>
+              routineService.deleteSetById(routineId, exercise.id, set.id),
+            ),
+          ];
         }),
     );
   };
