@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { APIGainstrackRoutineSummaryResponse } from "../types/routine.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
@@ -21,6 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 import useAuthStore from "../store/useAuthStore";
 import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
+import { useFocusEffect } from "@react-navigation/native";
 
 const H_PADDING = 20;
 const CARD_GAP = 16;
@@ -57,9 +58,11 @@ export default function RoutineScreen({ navigation }: any) {
   const cardSize = width - H_PADDING * 2;
 
   /** Carga todas las rutinas del usuario al montar la pantalla */
-  useEffect(() => {
-    fetchRoutines();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRoutines();
+    }, [])
+  );
 
   /** Inicia el flujo de ejecución de una rutina seleccionada */
   const handleStartRoutine = () => {

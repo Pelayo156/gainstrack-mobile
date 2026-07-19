@@ -15,7 +15,7 @@ export const routineService = {
     return response.data;
   },
   save: async (
-    saveRequest: APIGainstrackSaveRoutineRequest,
+    saveRequest: APIGainstrackSaveRoutineRequest
   ): Promise<APIGainstrackRoutineSummaryResponse> => {
     const response = await apiClient.post("/routines", saveRequest);
     return response.data;
@@ -30,48 +30,48 @@ export const routineService = {
   updateExerciseSet: async (
     id: number,
     routineExerciseId: number,
-    routineExerciseSet: Set,
+    routineExerciseSet: Set
   ): Promise<APIGainsTrackRoutineDetailResponse> => {
     const response = await apiClient.patch(
       `/routines/${id}/exercises/${routineExerciseId}/sets/${routineExerciseSet.id}`,
-      routineExerciseSet,
+      routineExerciseSet
     );
     return response.data;
   },
   deleteExerciseById: async (id: number, exerciseId: number) => {
     const response = await apiClient.delete(
-      `/routines/${id}/exercises/${exerciseId}`,
+      `/routines/${id}/exercises/${exerciseId}`
     );
     return response.data;
   },
   saveExercise: async (
     id: number,
-    saveRequest: APIGainsTrackSaveExerciseRoutine,
+    saveRequest: APIGainsTrackSaveExerciseRoutine
   ): Promise<RoutineExercise> => {
     const response = await apiClient.post(
       `/routines/${id}/exercises`,
-      saveRequest,
+      saveRequest
     );
     return response.data;
   },
   saveSet: async (
     id: number,
     exerciseId: number,
-    saveRequest: APIGainstrackSaveRoutineExerciseSet,
+    saveRequest: APIGainstrackSaveRoutineExerciseSet
   ): Promise<APIGainsTrackRoutineDetailResponse> => {
     const response = await apiClient.post(
       `/routines/${id}/exercises/${exerciseId}/sets`,
-      saveRequest,
+      saveRequest
     );
     return response.data;
   },
   deleteSetById: async (
     id: number,
     exerciseId: number,
-    setId: number,
+    setId: number
   ): Promise<APIGainsTrackRoutineDetailResponse> => {
     const response = await apiClient.delete(
-      `/routines/${id}/exercises/${exerciseId}/sets/${setId}`,
+      `/routines/${id}/exercises/${exerciseId}/sets/${setId}`
     );
     return response.data;
   },

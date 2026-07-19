@@ -22,6 +22,7 @@ import { APIGainstrackErrorResponse } from "../types/api.types";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
 import useExercisePickerStore from "../store/useExercisePickerStore";
+import Toast from "react-native-toast-message";
 
 const H_PADDING = 20;
 
@@ -36,7 +37,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         }));
         clearPickedExercise();
       }
-    }, [pickedExercise]),
+    }, [pickedExercise])
   );
 
   const fetchRoutineById = async () => {
@@ -86,10 +87,19 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     }
   };
 
+  const handleUpdateRoutineNotes = (notes: string) => {
+    if (routine === null) return;
+
+    setRoutine({
+      ...routine,
+      notes: notes,
+    });
+  };
+
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string,
+    newWeight: string
   ) => {
     if (routine === null) return;
 
@@ -105,10 +115,10 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   ? set
                   : {
                       ...set,
-                      weight: parseFloat(newWeight) || 0,
-                    },
+                      weight: newWeight === "" ? null : parseFloat(newWeight),
+                    }
               ),
-            },
+            }
       ),
     });
   };
@@ -116,7 +126,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string,
+    newReps: string
   ) => {
     if (routine === null) return;
 
@@ -132,17 +142,17 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   ? set
                   : {
                       ...set,
-                      reps: parseFloat(newReps) || 0,
-                    },
+                      reps: newReps === "" ? null : parseFloat(newReps),
+                    }
               ),
-            },
+            }
       ),
     });
   };
 
   const handleDeleteRoutineExercise = async () => {
     console.log(
-      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`,
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`
     );
 
     setIsLoading(true);
@@ -173,7 +183,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               sets: exercise.sets
                 .filter((set) => set.id !== setId)
                 .map((set, index) => ({ ...set, setNumber: index + 1 })),
-            },
+            }
       ),
     }));
     setIsLoading(false);
@@ -196,12 +206,12 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 {
                   id: -Date.now(),
                   setNumber: exercise.sets.length + 1,
-                  weight: 0,
-                  reps: 0,
+                  weight: null,
+                  reps: null,
                   notes: "",
                 },
               ],
-            },
+            }
       ),
     }));
     setIsLoading(false);
@@ -221,29 +231,29 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     // Ejercicios eliminados
     const deletedExercises = originalRoutine!.exercises.filter(
       (original) =>
-        !routine?.exercises.some((current) => current.id === original.id),
+        !routine?.exercises.some((current) => current.id === original.id)
     );
 
     // Ejercicios nuevos
     const newExercises = routine?.exercises.filter(
-      (exercise) => exercise.id < 0,
+      (exercise) => exercise.id < 0
     );
 
     // Se eliminan ejercicios de la rutina desde el backend
     await Promise.all(
       deletedExercises.map((exercise) =>
-        routineService.deleteExerciseById(routineId, exercise.id),
-      ),
+        routineService.deleteExerciseById(routineId, exercise.id)
+      )
     );
 
-    // Se agregn ejercicios nuevos a la rutina desde el backend
+    // Se agregan ejercicios nuevos a la rutina desde el backend
     const createdExercises = await Promise.all(
       newExercises.map((routineExercise) =>
         routineService.saveExercise(routineId, {
           exerciseId: routineExercise.exercise.id,
           orderIndex: routineExercise.orderIndex,
-        }),
-      ),
+        })
+      )
     );
 
     // Se agregan set a ejercicios recien creados desde el backend
@@ -255,9 +265,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             weight: set.weight,
             reps: set.reps,
             notes: set.notes,
-          }),
-        ),
-      ),
+          })
+        )
+      )
     );
 
     // Se modifican set de ejercicios existentes dentro de la rutina
@@ -266,22 +276,25 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         .filter((exercise) => exercise.id > 0)
         .flatMap((exercise) => {
           const originalExercise = originalRoutine.exercises.find(
-            (original) => original.id == exercise.id,
+            (original) => original.id == exercise.id
           );
 
           // Sets eliminados
-          const deletedSets = originalExercise?.sets.filter(
-            (original) =>
-              !exercise.sets.some((current) => current.id == original.id),
-          );
+          const deletedSets =
+            originalExercise?.sets.filter(
+              (original) =>
+                !exercise.sets.some((current) => current.id == original.id)
+            ) ?? [];
 
           // Sets nuevos
           const newSets = exercise.sets.filter((set) => set.id < 0);
 
           // Sets modificados
           const modifiedSets = exercise.sets.filter((set) => {
+            if (set.id < 0) return false;
+
             const originalSet = originalExercise?.sets.find(
-              (original) => original.id == set.id,
+              (original) => original.id == set.id
             );
 
             return (
@@ -293,11 +306,24 @@ export default function EditRoutineScreen({ route, navigation }: any) {
 
           return [
             ...deletedSets?.map((set) =>
-              routineService.deleteSetById(routineId, exercise.id, set.id),
+              routineService.deleteSetById(routineId, exercise.id, set.id)
             ),
+            ...newSets.map((set) =>
+              routineService.saveSet(routineId, exercise.id, set)
+            ),
+            ...modifiedSets.map((set) => {
+              console.log("Actualizando set:", JSON.stringify(set));
+              routineService.updateExerciseSet(routineId, exercise.id, set);
+            }),
           ];
-        }),
+        })
     );
+
+    Toast.show({
+      type: "success",
+      text1: `Rutina '${routine.name}' actualizada`,
+    });
+    navigation.goBack();
   };
 
   return (
@@ -363,6 +389,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               </View>
               <TextInput
                 value={routine.notes ?? ""}
+                onChangeText={(newNotes) => handleUpdateRoutineNotes(newNotes)}
                 placeholder="Sin notas"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 style={styles.notesInput}
@@ -472,7 +499,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                           onPress={() =>
                             handleDeleteSet(
                               routineExercise.id,
-                              routineExerciseSet.id,
+                              routineExerciseSet.id
                             )
                           }
                         >
@@ -488,12 +515,12 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                         <View style={styles.setInputGroup}>
                           <Text style={styles.setInputLabel}>PESO (KG)</Text>
                           <TextInput
-                            value={routineExerciseSet.weight.toString()}
+                            value={routineExerciseSet.weight?.toString() ?? ""}
                             onChangeText={(newWeight) =>
                               handleUpdateSetWeight(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newWeight,
+                                newWeight
                               )
                             }
                             keyboardType="decimal-pad"
@@ -505,12 +532,12 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                         <View style={styles.setInputGroup}>
                           <Text style={styles.setInputLabel}>REPETICIONES</Text>
                           <TextInput
-                            value={routineExerciseSet.reps.toString()}
+                            value={routineExerciseSet.reps?.toString() ?? ""}
                             onChangeText={(newReps) =>
                               handleUpdateSetReps(
                                 routineExercise.id,
                                 routineExerciseSet.id,
-                                newReps,
+                                newReps
                               )
                             }
                             keyboardType="number-pad"

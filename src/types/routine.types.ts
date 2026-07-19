@@ -17,7 +17,7 @@ export interface APIGainsTrackRoutineDetailResponse {
   id: number;
   name: string;
   createdAt: Date;
-  notes: null;
+  notes: string | null;
   isFree: boolean;
   exercises: RoutineExercise[];
 }
@@ -33,8 +33,8 @@ export interface RoutineExercise {
 export interface Set {
   id: number;
   setNumber: number;
-  weight: number;
-  reps: number;
+  weight: number | null;
+  reps: number | null;
   notes: null | string;
 }
 
@@ -45,7 +45,7 @@ export interface APIGainsTrackSaveExerciseRoutine {
 
 export interface APIGainstrackSaveRoutineExerciseSet {
   setNumber: number;
-  weight: number;
-  reps: number;
+  weight: number | null;
+  reps: number | null;
   notes: null | string;
 }
