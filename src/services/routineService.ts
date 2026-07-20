@@ -4,6 +4,7 @@ import {
   APIGainsTrackSaveExerciseRoutine,
   APIGainstrackSaveRoutineExerciseSet,
   APIGainstrackSaveRoutineRequest,
+  APIGainstrackUpdateRoutineRequest,
   RoutineExercise,
   Set,
 } from "../types/routine.types";
@@ -25,6 +26,13 @@ export const routineService = {
   },
   findById: async (id: number): Promise<APIGainsTrackRoutineDetailResponse> => {
     const response = await apiClient.get(`/routines/${id}`);
+    return response.data;
+  },
+  update: async (
+    id: number,
+    updateRequest: APIGainstrackUpdateRoutineRequest
+  ): Promise<APIGainsTrackRoutineDetailResponse> => {
+    const response = await apiClient.patch(`/routines/${id}`, updateRequest);
     return response.data;
   },
   updateExerciseSet: async (

@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  findNodeHandle,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  UIManager,
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -39,11 +43,33 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
     null
   );
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     console.log("INICIO DE VISTA EDITAR RUTINA");
     fetchRoutineById();
   }, []);
+
+  const handleInputFocus = (event: any) => {
+    const inputHandle = findNodeHandle(event.target);
+    const scrollHandle = findNodeHandle(scrollViewRef.current);
+
+    if (inputHandle == null || scrollHandle == null) return;
+
+    setTimeout(() => {
+      UIManager.measureLayout(
+        inputHandle,
+        scrollHandle,
+        () => {},
+        (_left: number, top: number) => {
+          scrollViewRef.current?.scrollTo({
+            y: Math.max(top - 120, 0),
+            animated: true,
+          });
+        }
+      );
+    }, 120);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -85,6 +111,15 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleUpdateRoutineName = (name: string) => {
+    if (routine === null) return;
+
+    setRoutine({
+      ...routine,
+      name: name,
+    });
   };
 
   const handleUpdateRoutineNotes = (notes: string) => {
@@ -228,6 +263,17 @@ export default function EditRoutineScreen({ route, navigation }: any) {
       return;
     }
 
+    // Se identifica si cambio el nombre o la nota general de la rutina
+    if (
+      originalRoutine.name !== routine.name ||
+      originalRoutine.notes !== routine.notes
+    ) {
+      await routineService.update(routineId, {
+        name: routine.name,
+        notes: routine.notes,
+      });
+    }
+
     // Ejercicios eliminados
     const deletedExercises = originalRoutine!.exercises.filter(
       (original) =>
@@ -311,10 +357,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             ...newSets.map((set) =>
               routineService.saveSet(routineId, exercise.id, set)
             ),
-            ...modifiedSets.map((set) => {
-              console.log("Actualizando set:", JSON.stringify(set));
-              routineService.updateExerciseSet(routineId, exercise.id, set);
-            }),
+            ...modifiedSets.map((set) =>
+              routineService.updateExerciseSet(routineId, exercise.id, set)
+            ),
           ];
         })
     );
@@ -368,229 +413,252 @@ export default function EditRoutineScreen({ route, navigation }: any) {
       )}
 
       {!isLoading && errorMessage === null && routine && (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.titleSection}>
-              <Text style={styles.routineTitle}>{routine.name}</Text>
-            </View>
-
-            <View style={styles.notesCard}>
-              <View style={styles.notesCardHeader}>
-                <Ionicons
-                  name="document-text-outline"
-                  size={15}
-                  color="rgba(255,255,255,0.4)"
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.flex}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.titleSection}>
+                <TextInput
+                  value={routine.name}
+                  onChangeText={(newName) => handleUpdateRoutineName(newName)}
+                  placeholder="Nombre de la rutina"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  style={styles.routineTitle}
                 />
-                <Text style={styles.notesCardLabel}>Notas de la rutina</Text>
               </View>
-              <TextInput
-                value={routine.notes ?? ""}
-                onChangeText={(newNotes) => handleUpdateRoutineNotes(newNotes)}
-                placeholder="Sin notas"
-                placeholderTextColor="rgba(255,255,255,0.3)"
-                style={styles.notesInput}
-                multiline
-              />
-            </View>
 
-            {routine.exercises.length === 0 && (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  Esta rutina no tiene ejercicios aún
-                </Text>
+              <View style={styles.notesCard}>
+                <View style={styles.notesCardHeader}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={15}
+                    color="rgba(255,255,255,0.4)"
+                  />
+                  <Text style={styles.notesCardLabel}>Notas de la rutina</Text>
+                </View>
+                <TextInput
+                  value={routine.notes ?? ""}
+                  onChangeText={(newNotes) =>
+                    handleUpdateRoutineNotes(newNotes)
+                  }
+                  placeholder="Sin notas"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  style={styles.notesInput}
+                  multiline
+                />
               </View>
-            )}
 
-            {routine.exercises.map((routineExercise) => (
-              <View key={routineExercise.id} style={styles.exerciseCard}>
-                <View style={styles.exerciseHeaderRow}>
-                  <View style={styles.exerciseHeaderInfo}>
-                    <Text style={styles.exerciseName} numberOfLines={2}>
-                      {routineExercise.exercise.name}
-                    </Text>
-                    <View style={styles.muscleGroupPill}>
-                      <Text style={styles.muscleGroupPillText}>
-                        {routineExercise.exercise.muscleGroup.name}
+              {routine.exercises.length === 0 && (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    Esta rutina no tiene ejercicios aún
+                  </Text>
+                </View>
+              )}
+
+              {routine.exercises.map((routineExercise) => (
+                <View key={routineExercise.id} style={styles.exerciseCard}>
+                  <View style={styles.exerciseHeaderRow}>
+                    <View style={styles.exerciseHeaderInfo}>
+                      <Text style={styles.exerciseName} numberOfLines={2}>
+                        {routineExercise.exercise.name}
+                      </Text>
+                      <View style={styles.muscleGroupPill}>
+                        <Text style={styles.muscleGroupPillText}>
+                          {routineExercise.exercise.muscleGroup.name}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.exerciseOrderBadge}>
+                      <Text style={styles.exerciseOrderBadgeText}>
+                        {routineExercise.orderIndex}
                       </Text>
                     </View>
-                  </View>
-                  <View style={styles.exerciseOrderBadge}>
-                    <Text style={styles.exerciseOrderBadgeText}>
-                      {routineExercise.orderIndex}
-                    </Text>
-                  </View>
-                  <Popover
-                    isVisible={openExerciseMenuId === routineExercise.id}
-                    onRequestClose={() => setOpenExerciseMenuId(null)}
-                    from={(sourceRef, showPopover) => (
-                      <TouchableOpacity
-                        ref={sourceRef as any}
-                        onPress={() =>
-                          setOpenExerciseMenuId(routineExercise.id)
-                        }
-                        style={styles.exerciseOptionsButton}
-                        activeOpacity={0.6}
-                      >
-                        <Ionicons
-                          name="ellipsis-vertical"
-                          size={18}
-                          color="rgba(255,255,255,0.45)"
-                        />
-                      </TouchableOpacity>
-                    )}
-                    popoverStyle={styles.popover}
-                    backgroundStyle={{ backgroundColor: "transparent" }}
-                  >
-                    <View style={styles.popoverMenu}>
-                      <TouchableOpacity
-                        style={styles.popoverItem}
-                        activeOpacity={0.7}
-                        onPress={() => handleDeleteRoutineExercise()}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={16}
-                          color="rgba(255,75,75,0.9)"
-                        />
-                        <Text style={styles.popoverItemDanger}>Eliminar</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </Popover>
-                </View>
-
-                <View style={styles.exerciseNotesRow}>
-                  <Ionicons
-                    name="create-outline"
-                    size={13}
-                    color="rgba(255,255,255,0.3)"
-                    style={styles.exerciseNotesIcon}
-                  />
-                  <TextInput
-                    value={routineExercise.notes}
-                    placeholder="Notas del ejercicio"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
-                    style={styles.exerciseNotesInput}
-                  />
-                </View>
-
-                <View style={styles.setsDivider} />
-
-                <View style={styles.setsContainer}>
-                  {routineExercise.sets.map((routineExerciseSet) => (
-                    <View key={routineExerciseSet.id} style={styles.setCard}>
-                      <View style={styles.setHeaderRow}>
-                        <View style={styles.setHeaderInfo}>
-                          <View style={styles.setBadge}>
-                            <Text style={styles.setBadgeText}>
-                              {routineExerciseSet.setNumber}
-                            </Text>
-                          </View>
-                          <Text style={styles.setLabel}>
-                            SERIE {routineExerciseSet.setNumber}
-                          </Text>
-                        </View>
+                    <Popover
+                      isVisible={openExerciseMenuId === routineExercise.id}
+                      onRequestClose={() => setOpenExerciseMenuId(null)}
+                      from={(sourceRef, showPopover) => (
                         <TouchableOpacity
-                          style={styles.deleteSetButton}
-                          activeOpacity={0.7}
+                          ref={sourceRef as any}
                           onPress={() =>
-                            handleDeleteSet(
-                              routineExercise.id,
-                              routineExerciseSet.id
-                            )
+                            setOpenExerciseMenuId(routineExercise.id)
                           }
+                          style={styles.exerciseOptionsButton}
+                          activeOpacity={0.6}
+                        >
+                          <Ionicons
+                            name="ellipsis-vertical"
+                            size={18}
+                            color="rgba(255,255,255,0.45)"
+                          />
+                        </TouchableOpacity>
+                      )}
+                      popoverStyle={styles.popover}
+                      backgroundStyle={{ backgroundColor: "transparent" }}
+                    >
+                      <View style={styles.popoverMenu}>
+                        <TouchableOpacity
+                          style={styles.popoverItem}
+                          activeOpacity={0.7}
+                          onPress={() => handleDeleteRoutineExercise()}
                         >
                           <Ionicons
                             name="trash-outline"
-                            size={15}
+                            size={16}
                             color="rgba(255,75,75,0.9)"
                           />
+                          <Text style={styles.popoverItemDanger}>Eliminar</Text>
                         </TouchableOpacity>
                       </View>
+                    </Popover>
+                  </View>
 
-                      <View style={styles.setInputsRow}>
-                        <View style={styles.setInputGroup}>
-                          <Text style={styles.setInputLabel}>PESO (KG)</Text>
-                          <TextInput
-                            value={routineExerciseSet.weight?.toString() ?? ""}
-                            onChangeText={(newWeight) =>
-                              handleUpdateSetWeight(
+                  <View style={styles.exerciseNotesRow}>
+                    <Ionicons
+                      name="create-outline"
+                      size={13}
+                      color="rgba(255,255,255,0.3)"
+                      style={styles.exerciseNotesIcon}
+                    />
+                    <TextInput
+                      value={routineExercise.notes}
+                      placeholder="Notas del ejercicio"
+                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      style={styles.exerciseNotesInput}
+                      onFocus={handleInputFocus}
+                    />
+                  </View>
+
+                  <View style={styles.setsDivider} />
+
+                  <View style={styles.setsContainer}>
+                    {routineExercise.sets.map((routineExerciseSet) => (
+                      <View key={routineExerciseSet.id} style={styles.setCard}>
+                        <View style={styles.setHeaderRow}>
+                          <View style={styles.setHeaderInfo}>
+                            <View style={styles.setBadge}>
+                              <Text style={styles.setBadgeText}>
+                                {routineExerciseSet.setNumber}
+                              </Text>
+                            </View>
+                            <Text style={styles.setLabel}>
+                              SERIE {routineExerciseSet.setNumber}
+                            </Text>
+                          </View>
+                          <TouchableOpacity
+                            style={styles.deleteSetButton}
+                            activeOpacity={0.7}
+                            onPress={() =>
+                              handleDeleteSet(
                                 routineExercise.id,
-                                routineExerciseSet.id,
-                                newWeight
+                                routineExerciseSet.id
                               )
                             }
-                            keyboardType="decimal-pad"
-                            placeholderTextColor="rgba(255,255,255,0.3)"
-                            style={styles.setInput}
-                          />
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={15}
+                              color="rgba(255,75,75,0.9)"
+                            />
+                          </TouchableOpacity>
                         </View>
-                        <View style={styles.setInputDivider} />
-                        <View style={styles.setInputGroup}>
-                          <Text style={styles.setInputLabel}>REPETICIONES</Text>
+
+                        <View style={styles.setInputsRow}>
+                          <View style={styles.setInputGroup}>
+                            <Text style={styles.setInputLabel}>PESO (KG)</Text>
+                            <TextInput
+                              value={
+                                routineExerciseSet.weight?.toString() ?? ""
+                              }
+                              onChangeText={(newWeight) =>
+                                handleUpdateSetWeight(
+                                  routineExercise.id,
+                                  routineExerciseSet.id,
+                                  newWeight
+                                )
+                              }
+                              keyboardType="decimal-pad"
+                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              style={styles.setInput}
+                              onFocus={handleInputFocus}
+                            />
+                          </View>
+                          <View style={styles.setInputDivider} />
+                          <View style={styles.setInputGroup}>
+                            <Text style={styles.setInputLabel}>
+                              REPETICIONES
+                            </Text>
+                            <TextInput
+                              value={routineExerciseSet.reps?.toString() ?? ""}
+                              onChangeText={(newReps) =>
+                                handleUpdateSetReps(
+                                  routineExercise.id,
+                                  routineExerciseSet.id,
+                                  newReps
+                                )
+                              }
+                              keyboardType="number-pad"
+                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              style={styles.setInput}
+                              onFocus={handleInputFocus}
+                            />
+                          </View>
+                        </View>
+
+                        <View style={styles.setNotesRow}>
+                          <Ionicons
+                            name="document-text-outline"
+                            size={12}
+                            color="rgba(255,255,255,0.3)"
+                          />
                           <TextInput
-                            value={routineExerciseSet.reps?.toString() ?? ""}
-                            onChangeText={(newReps) =>
-                              handleUpdateSetReps(
-                                routineExercise.id,
-                                routineExerciseSet.id,
-                                newReps
-                              )
-                            }
-                            keyboardType="number-pad"
+                            value={routineExerciseSet.notes ?? ""}
+                            placeholder="Notas de la serie"
                             placeholderTextColor="rgba(255,255,255,0.3)"
-                            style={styles.setInput}
+                            style={styles.setNotesInput}
+                            onFocus={handleInputFocus}
                           />
                         </View>
                       </View>
+                    ))}
+                  </View>
 
-                      <View style={styles.setNotesRow}>
-                        <Ionicons
-                          name="document-text-outline"
-                          size={12}
-                          color="rgba(255,255,255,0.3)"
-                        />
-                        <TextInput
-                          value={routineExerciseSet.notes ?? ""}
-                          placeholder="Notas de la serie"
-                          placeholderTextColor="rgba(255,255,255,0.3)"
-                          style={styles.setNotesInput}
-                        />
-                      </View>
-                    </View>
-                  ))}
+                  <TouchableOpacity
+                    style={styles.addSetButton}
+                    activeOpacity={0.8}
+                    onPress={() => handleAddSet(routineExercise.id)}
+                  >
+                    <Ionicons name="add" size={16} color="#F7C536" />
+                    <Text style={styles.addSetButtonText}>Agregar set</Text>
+                  </TouchableOpacity>
                 </View>
+              ))}
 
-                <TouchableOpacity
-                  style={styles.addSetButton}
-                  activeOpacity={0.8}
-                  onPress={() => handleAddSet(routineExercise.id)}
-                >
-                  <Ionicons name="add" size={16} color="#F7C536" />
-                  <Text style={styles.addSetButtonText}>Agregar set</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            <TouchableOpacity
-              style={styles.addExerciseButton}
-              activeOpacity={0.8}
-              onPress={() => {
-                navigation.navigate("ExercisePicker", {
-                  routineId: routine.id,
-                });
-              }}
-            >
-              <Ionicons name="add" size={20} color="#F7C536" />
-              <Text style={styles.addExerciseButtonText}>
-                Agregar ejercicio
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </TouchableWithoutFeedback>
+              <TouchableOpacity
+                style={styles.addExerciseButton}
+                activeOpacity={0.8}
+                onPress={() => {
+                  navigation.navigate("ExercisePicker", {
+                    routineId: routine.id,
+                  });
+                }}
+              >
+                <Ionicons name="add" size={20} color="#F7C536" />
+                <Text style={styles.addExerciseButtonText}>
+                  Agregar ejercicio
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       )}
     </LinearGradient>
   );
@@ -680,6 +748,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Bold",
     fontSize: 28,
     letterSpacing: 0.3,
+    padding: 0,
   },
   routineSubtitle: {
     color: "rgba(255,255,255,0.3)",
@@ -939,5 +1008,28 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
+  },
+  keyboardToolbar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    backgroundColor: "#0f0f14",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: H_PADDING,
+    paddingVertical: 8,
+  },
+  keyboardToolbarButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  keyboardToolbarButtonText: {
+    color: "#F7C536",
+    fontFamily: "Inter-Bold",
+    fontSize: 14,
+    letterSpacing: 0.3,
   },
 });

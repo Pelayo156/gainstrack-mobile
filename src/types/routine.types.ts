@@ -13,6 +13,11 @@ export interface APIGainstrackSaveRoutineRequest {
   notes: string;
 }
 
+export interface APIGainstrackUpdateRoutineRequest {
+  name: string | null;
+  notes: string | null;
+}
+
 export interface APIGainsTrackRoutineDetailResponse {
   id: number;
   name: string;
