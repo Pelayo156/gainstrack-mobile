@@ -1,5 +1,4 @@
 import axios from "axios";
-import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import {
   View,
@@ -72,7 +71,7 @@ export default function RegisterScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <LinearGradient colors={["#080808", "#0f0f14"]} style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: "#060E1A" }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -194,7 +193,7 @@ export default function RegisterScreen() {
         <Modal visible={isLoading} transparent>
           <LoadingSpinner />
         </Modal>
-      </LinearGradient>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
@@ -249,13 +248,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   registerButton: {
-    backgroundColor: "#F7C536",
+    backgroundColor: "#681ADB",
     borderRadius: 14,
     paddingVertical: 18,
     marginTop: 6,
   },
   registerButtonText: {
-    color: "#080808",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     textAlign: "center",

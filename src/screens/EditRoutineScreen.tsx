@@ -14,7 +14,6 @@ import {
   UIManager,
   View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { routineService } from "../services/routineService";
 import {
@@ -27,6 +26,7 @@ import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
 import useExercisePickerStore from "../store/useExercisePickerStore";
 import Toast from "react-native-toast-message";
+import GlassCard from "../components/ui/GlassCard";
 
 const H_PADDING = 20;
 
@@ -41,7 +41,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const [routine, setRoutine] =
     useState<APIGainsTrackRoutineDetailResponse | null>(null);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
-    null
+    null,
   );
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -66,7 +66,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             y: Math.max(top - 120, 0),
             animated: true,
           });
-        }
+        },
       );
     }, 120);
   };
@@ -90,7 +90,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         }));
         clearPickedExercise();
       }
-    }, [pickedExercise])
+    }, [pickedExercise]),
   );
 
   const fetchRoutineById = async () => {
@@ -134,7 +134,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetWeight = (
     exerciseId: number,
     setId: number,
-    newWeight: string
+    newWeight: string,
   ) => {
     if (routine === null) return;
 
@@ -151,9 +151,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       weight: newWeight === "" ? null : parseFloat(newWeight),
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
@@ -161,7 +161,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
   const handleUpdateSetReps = (
     exerciseId: number,
     setId: number,
-    newReps: string
+    newReps: string,
   ) => {
     if (routine === null) return;
 
@@ -178,16 +178,16 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   : {
                       ...set,
                       reps: newReps === "" ? null : parseFloat(newReps),
-                    }
+                    },
               ),
-            }
+            },
       ),
     });
   };
 
   const handleDeleteRoutineExercise = async () => {
     console.log(
-      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`
+      `INICIO EVENTO ELIMINAR EJERCICIO DE RUTINA CON ID: ${openExerciseMenuId} DE FORMA LOCAL`,
     );
 
     setIsLoading(true);
@@ -218,7 +218,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               sets: exercise.sets
                 .filter((set) => set.id !== setId)
                 .map((set, index) => ({ ...set, setNumber: index + 1 })),
-            }
+            },
       ),
     }));
     setIsLoading(false);
@@ -246,7 +246,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   notes: "",
                 },
               ],
-            }
+            },
       ),
     }));
     setIsLoading(false);
@@ -277,19 +277,19 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     // Ejercicios eliminados
     const deletedExercises = originalRoutine!.exercises.filter(
       (original) =>
-        !routine?.exercises.some((current) => current.id === original.id)
+        !routine?.exercises.some((current) => current.id === original.id),
     );
 
     // Ejercicios nuevos
     const newExercises = routine?.exercises.filter(
-      (exercise) => exercise.id < 0
+      (exercise) => exercise.id < 0,
     );
 
     // Se eliminan ejercicios de la rutina desde el backend
     await Promise.all(
       deletedExercises.map((exercise) =>
-        routineService.deleteExerciseById(routineId, exercise.id)
-      )
+        routineService.deleteExerciseById(routineId, exercise.id),
+      ),
     );
 
     // Se agregan ejercicios nuevos a la rutina desde el backend
@@ -298,8 +298,8 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         routineService.saveExercise(routineId, {
           exerciseId: routineExercise.exercise.id,
           orderIndex: routineExercise.orderIndex,
-        })
-      )
+        }),
+      ),
     );
 
     // Se agregan set a ejercicios recien creados desde el backend
@@ -311,9 +311,9 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             weight: set.weight,
             reps: set.reps,
             notes: set.notes,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 
     // Se modifican set de ejercicios existentes dentro de la rutina
@@ -322,14 +322,14 @@ export default function EditRoutineScreen({ route, navigation }: any) {
         .filter((exercise) => exercise.id > 0)
         .flatMap((exercise) => {
           const originalExercise = originalRoutine.exercises.find(
-            (original) => original.id == exercise.id
+            (original) => original.id == exercise.id,
           );
 
           // Sets eliminados
           const deletedSets =
             originalExercise?.sets.filter(
               (original) =>
-                !exercise.sets.some((current) => current.id == original.id)
+                !exercise.sets.some((current) => current.id == original.id),
             ) ?? [];
 
           // Sets nuevos
@@ -340,7 +340,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
             if (set.id < 0) return false;
 
             const originalSet = originalExercise?.sets.find(
-              (original) => original.id == set.id
+              (original) => original.id == set.id,
             );
 
             return (
@@ -352,27 +352,23 @@ export default function EditRoutineScreen({ route, navigation }: any) {
 
           return [
             ...deletedSets?.map((set) =>
-              routineService.deleteSetById(routineId, exercise.id, set.id)
+              routineService.deleteSetById(routineId, exercise.id, set.id),
             ),
             ...newSets.map((set) =>
-              routineService.saveSet(routineId, exercise.id, set)
+              routineService.saveSet(routineId, exercise.id, set),
             ),
             ...modifiedSets.map((set) =>
-              routineService.updateExerciseSet(routineId, exercise.id, set)
+              routineService.updateExerciseSet(routineId, exercise.id, set),
             ),
           ];
-        })
+        }),
     );
 
-    Toast.show({
-      type: "success",
-      text1: `Rutina '${routine.name}' actualizada`,
-    });
     navigation.goBack();
   };
 
   return (
-    <LinearGradient colors={["#080808", "#0f0f14"]} style={styles.flex}>
+    <View style={styles.flex}>
       <View style={styles.headerBar}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -389,13 +385,13 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           style={styles.headerIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="checkmark" size={24} color="#F7C536" />
+          <Ionicons name="checkmark" size={24} color="#681ADB" />
         </TouchableOpacity>
       </View>
 
       {isLoading && (
         <ActivityIndicator
-          color="#F7C536"
+          color="#681ADB"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -435,7 +431,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 />
               </View>
 
-              <View style={styles.notesCard}>
+              <GlassCard style={styles.notesCard}>
                 <View style={styles.notesCardHeader}>
                   <Ionicons
                     name="document-text-outline"
@@ -454,7 +450,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   style={styles.notesInput}
                   multiline
                 />
-              </View>
+              </GlassCard>
 
               {routine.exercises.length === 0 && (
                 <View style={styles.emptyContainer}>
@@ -465,7 +461,11 @@ export default function EditRoutineScreen({ route, navigation }: any) {
               )}
 
               {routine.exercises.map((routineExercise) => (
-                <View key={routineExercise.id} style={styles.exerciseCard}>
+                <GlassCard
+                  key={routineExercise.id}
+                  intensity="strong"
+                  style={styles.exerciseCard}
+                >
                   <View style={styles.exerciseHeaderRow}>
                     <View style={styles.exerciseHeaderInfo}>
                       <Text style={styles.exerciseName} numberOfLines={2}>
@@ -541,7 +541,11 @@ export default function EditRoutineScreen({ route, navigation }: any) {
 
                   <View style={styles.setsContainer}>
                     {routineExercise.sets.map((routineExerciseSet) => (
-                      <View key={routineExerciseSet.id} style={styles.setCard}>
+                      <GlassCard
+                        key={routineExerciseSet.id}
+                        intensity="subtle"
+                        style={styles.setCard}
+                      >
                         <View style={styles.setHeaderRow}>
                           <View style={styles.setHeaderInfo}>
                             <View style={styles.setBadge}>
@@ -559,7 +563,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                             onPress={() =>
                               handleDeleteSet(
                                 routineExercise.id,
-                                routineExerciseSet.id
+                                routineExerciseSet.id,
                               )
                             }
                           >
@@ -582,7 +586,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                                 handleUpdateSetWeight(
                                   routineExercise.id,
                                   routineExerciseSet.id,
-                                  newWeight
+                                  newWeight,
                                 )
                               }
                               keyboardType="decimal-pad"
@@ -602,7 +606,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                                 handleUpdateSetReps(
                                   routineExercise.id,
                                   routineExerciseSet.id,
-                                  newReps
+                                  newReps,
                                 )
                               }
                               keyboardType="number-pad"
@@ -627,7 +631,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                             onFocus={handleInputFocus}
                           />
                         </View>
-                      </View>
+                      </GlassCard>
                     ))}
                   </View>
 
@@ -636,10 +640,10 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     activeOpacity={0.8}
                     onPress={() => handleAddSet(routineExercise.id)}
                   >
-                    <Ionicons name="add" size={16} color="#F7C536" />
+                    <Ionicons name="add" size={16} color="#681ADB" />
                     <Text style={styles.addSetButtonText}>Agregar set</Text>
                   </TouchableOpacity>
-                </View>
+                </GlassCard>
               ))}
 
               <TouchableOpacity
@@ -651,7 +655,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   });
                 }}
               >
-                <Ionicons name="add" size={20} color="#F7C536" />
+                <Ionicons name="add" size={20} color="#681ADB" />
                 <Text style={styles.addExerciseButtonText}>
                   Agregar ejercicio
                 </Text>
@@ -660,19 +664,21 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: "#060E1A",
   },
   headerBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: H_PADDING,
+    paddingTop: 16,
     paddingBottom: 16,
   },
   headerIconButton: {
@@ -757,11 +763,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   notesCard: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.09)",
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 18,
   },
   notesCardHeader: {
     flexDirection: "row",
@@ -783,11 +785,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   exerciseCard: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 22,
   },
   exerciseHeaderRow: {
     flexDirection: "row",
@@ -810,15 +808,15 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(247,197,54,0.12)",
-    borderColor: "rgba(247,197,54,0.3)",
+    backgroundColor: "rgba(104,26,219,0.12)",
+    borderColor: "rgba(104,26,219,0.3)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -827,8 +825,8 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(247,197,54,0.1)",
-    borderColor: "rgba(247,197,54,0.25)",
+    backgroundColor: "rgba(104,26,219,0.1)",
+    borderColor: "rgba(104,26,219,0.25)",
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -861,10 +859,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   setCard: {
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 12,
   },
   setHeaderRow: {
@@ -891,12 +886,12 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: "rgba(247,197,54,0.5)",
+    borderColor: "rgba(104,26,219,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   setBadgeText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontSize: 11,
     fontFamily: "Inter-Bold",
   },
@@ -946,7 +941,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   popover: {
-    backgroundColor: "#0a0a10",
+    backgroundColor: "#060E1A",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.1)",
@@ -978,15 +973,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "rgba(247,197,54,0.06)",
-    borderColor: "rgba(247,197,54,0.25)",
+    backgroundColor: "rgba(104,26,219,0.06)",
+    borderColor: "rgba(104,26,219,0.25)",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 10,
     marginTop: 10,
   },
   addSetButtonText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontFamily: "Inter-Bold",
     fontSize: 13,
     letterSpacing: 0.5,
@@ -996,15 +991,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "rgba(247,197,54,0.08)",
-    borderColor: "rgba(247,197,54,0.3)",
+    backgroundColor: "rgba(104,26,219,0.08)",
+    borderColor: "rgba(104,26,219,0.3)",
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 4,
   },
   addExerciseButtonText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
@@ -1013,7 +1008,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    backgroundColor: "#0f0f14",
+    backgroundColor: "#060E1A",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(255,255,255,0.1)",
     paddingHorizontal: H_PADDING,
@@ -1027,7 +1022,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   keyboardToolbarButtonText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontFamily: "Inter-Bold",
     fontSize: 14,
     letterSpacing: 0.3,

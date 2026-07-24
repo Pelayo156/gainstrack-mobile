@@ -17,7 +17,6 @@ import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function LoginScreen({ navigation }: any) {
   const { login } = useAuthStore();
@@ -54,7 +53,7 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <LinearGradient colors={["#080808", "#0f0f14"]} style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: "#060E1A" }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -153,7 +152,7 @@ export default function LoginScreen({ navigation }: any) {
         <Modal visible={isLoading} transparent>
           <LoadingSpinner />
         </Modal>
-      </LinearGradient>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
@@ -208,13 +207,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   loginButton: {
-    backgroundColor: "#F7C536",
+    backgroundColor: "#681ADB",
     borderRadius: 14,
     paddingVertical: 18,
     marginTop: 6,
   },
   loginButtonText: {
-    color: "#080808",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     textAlign: "center",

@@ -10,7 +10,7 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 const Tab = createBottomTabNavigator();
 
 const TAB_BAR_STYLE = {
-  backgroundColor: "#0f0f14",
+  backgroundColor: "#060E1A",
   borderTopColor: "rgba(255,255,255,0.1)",
   borderTopWidth: 1,
   height: 80,
@@ -32,12 +32,12 @@ export default function RootNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: TAB_BAR_STYLE,
-        tabBarActiveTintColor: "#F7C536",
+        tabBarActiveTintColor: "#681ADB",
         tabBarInactiveTintColor: "rgba(255,255,255,0.3)",
         tabBarLabelStyle: TAB_BAR_LABEL_STYLE,
         headerShown: false,
         sceneStyle: {
-          backgroundColor: "#080808",
+          backgroundColor: "#060E1A",
           paddingTop: insets.top + 12,
         },
       }}
@@ -51,7 +51,8 @@ export default function RootNavigator() {
           ),
           tabBarStyle:
             getFocusedRouteNameFromRoute(route) === "EditRoutine" ||
-            getFocusedRouteNameFromRoute(route) === "ExercisePicker"
+            getFocusedRouteNameFromRoute(route) === "ExercisePicker" ||
+            getFocusedRouteNameFromRoute(route) === "GymPicker"
               ? { display: "none" }
               : TAB_BAR_STYLE,
         })}

@@ -16,12 +16,12 @@ import { APIGainstrackRoutineSummaryResponse } from "../types/routine.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import { routineService } from "../services/routineService";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import useAuthStore from "../store/useAuthStore";
 import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
+import GlassCard from "../components/ui/GlassCard";
 
 const H_PADDING = 20;
 const CARD_GAP = 16;
@@ -61,12 +61,14 @@ export default function RoutineScreen({ navigation }: any) {
   useFocusEffect(
     useCallback(() => {
       fetchRoutines();
-    }, [])
+    }, []),
   );
 
   /** Inicia el flujo de ejecución de una rutina seleccionada */
   const handleStartRoutine = () => {
     console.log("INICIO DE RUTINA");
+
+    navigation.navigate("GymPicker");
   };
 
   /** Realiza la petición al API y actualiza el estado con las rutinas o el error obtenido */
@@ -161,7 +163,7 @@ export default function RoutineScreen({ navigation }: any) {
   };
 
   return (
-    <LinearGradient colors={["#080808", "#0f0f14"]} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#060E1A" }}>
       <FlatList
         data={!isLoading && errorMessage === null ? routinesItems : []}
         keyExtractor={(routine) => routine.id.toString()}
@@ -184,7 +186,7 @@ export default function RoutineScreen({ navigation }: any) {
 
             {isLoading && (
               <ActivityIndicator
-                color="#F7C536"
+                color="#681ADB"
                 size="large"
                 style={{ marginTop: 40 }}
               />
@@ -211,12 +213,7 @@ export default function RoutineScreen({ navigation }: any) {
           </>
         }
         renderItem={({ item: routine }) => (
-          <LinearGradient
-            colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.04)"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.card, { width: cardSize }]}
-          >
+          <GlassCard intensity="strong" style={[styles.card, { width: cardSize }]}>
             <View>
               <View style={styles.cardTopRow}>
                 <Text style={styles.routineName} numberOfLines={2}>
@@ -309,7 +306,7 @@ export default function RoutineScreen({ navigation }: any) {
                 <Text style={styles.startButtonText}>Iniciar</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </GlassCard>
         )}
         ListFooterComponent={
           <TouchableOpacity onPress={logout} style={styles.startButton}>
@@ -325,7 +322,7 @@ export default function RoutineScreen({ navigation }: any) {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.centeredView}>
-            <View style={styles.createRoutineModalView}>
+            <GlassCard intensity="strong" style={styles.createRoutineModalView}>
               <View style={styles.modalHeader}>
                 <View>
                   <Text style={styles.modalTitle}>Nueva Rutina</Text>
@@ -346,7 +343,7 @@ export default function RoutineScreen({ navigation }: any) {
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.modalInputCard}>
+              <GlassCard intensity="subtle" style={styles.modalInputCard}>
                 <View style={styles.inputRow}>
                   <Ionicons
                     name="barbell-outline"
@@ -388,7 +385,7 @@ export default function RoutineScreen({ navigation }: any) {
                     numberOfLines={3}
                   />
                 </View>
-              </View>
+              </GlassCard>
 
               <TouchableOpacity
                 onPress={handleCreateRoutine}
@@ -397,11 +394,11 @@ export default function RoutineScreen({ navigation }: any) {
               >
                 <Text style={styles.createButtonText}>Crear rutina</Text>
               </TouchableOpacity>
-            </View>
+            </GlassCard>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -461,12 +458,9 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   card: {
-    borderColor: "rgba(255,255,255,0.18)",
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 24,
+    padding: 18,
     justifyContent: "space-between",
-    overflow: "hidden",
   },
   cardTopRow: {
     flexDirection: "row",
@@ -479,7 +473,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   popover: {
-    backgroundColor: "#0a0a10",
+    backgroundColor: "#060E1A",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.1)",
@@ -549,36 +543,34 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   createButton: {
-    backgroundColor: "#F7C536",
+    backgroundColor: "#681ADB",
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 20,
   },
   createButtonText: {
-    color: "#080808",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
   },
   startButton: {
-    backgroundColor: "#F7C536",
+    backgroundColor: "#681ADB",
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",
   },
   startButtonText: {
-    color: "#080808",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 13,
     letterSpacing: 0.5,
   },
   createRoutineModalView: {
     width: "100%",
-    backgroundColor: "#0f0f14",
-    borderColor: "rgba(255,255,255,0.1)",
-    borderWidth: 1,
-    borderRadius: 22,
+    backgroundColor: "rgba(6,13,24,0.96)",
+    borderRadius: 28,
     padding: 24,
   },
   modalHeader: {
@@ -603,11 +595,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalInputCard: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.09)",
-    borderWidth: 1,
-    borderRadius: 18,
-    overflow: "hidden",
+    borderRadius: 20,
+    padding: 0,
     marginBottom: 20,
   },
   modalDivider: {

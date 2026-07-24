@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { exerciseService } from "../services/exerciseService";
 import { APIGainsTrackExerciseResponse } from "../types/exercise.types";
@@ -73,7 +72,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
   };
 
   return (
-    <LinearGradient colors={["#080808", "#0f0f14"]} style={styles.flex}>
+    <View style={styles.flex}>
       <View style={styles.headerBar}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -120,7 +119,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
       {isLoading && (
         <ActivityIndicator
-          color="#F7C536"
+          color="#681ADB"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -204,7 +203,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
                   ]}
                 >
                   {isSelected && (
-                    <Ionicons name="checkmark" size={16} color="#080808" />
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -233,13 +232,14 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
           </Text>
         </TouchableOpacity>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+    backgroundColor: "#060E1A",
   },
   headerBar: {
     flexDirection: "row",
@@ -331,8 +331,8 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   exerciseCardSelected: {
-    backgroundColor: "rgba(247,197,54,0.08)",
-    borderColor: "rgba(247,197,54,0.5)",
+    backgroundColor: "rgba(104,26,219,0.08)",
+    borderColor: "rgba(104,26,219,0.5)",
   },
   exerciseInfo: {
     flex: 1,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   exerciseNameSelected: {
-    color: "#F7C536",
+    color: "#681ADB",
   },
   exerciseTagsRow: {
     flexDirection: "row",
@@ -353,19 +353,19 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(247,197,54,0.12)",
-    borderColor: "rgba(247,197,54,0.3)",
+    backgroundColor: "rgba(104,26,219,0.12)",
+    borderColor: "rgba(104,26,219,0.3)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillSelected: {
-    backgroundColor: "rgba(247,197,54,0.2)",
-    borderColor: "rgba(247,197,54,0.6)",
+    backgroundColor: "rgba(104,26,219,0.2)",
+    borderColor: "rgba(104,26,219,0.6)",
   },
   muscleGroupPillText: {
-    color: "#F7C536",
+    color: "#681ADB",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -394,8 +394,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   selectionCircleSelected: {
-    backgroundColor: "#F7C536",
-    borderColor: "#F7C536",
+    backgroundColor: "#681ADB",
+    borderColor: "#681ADB",
   },
   footer: {
     paddingHorizontal: H_PADDING,
@@ -404,21 +404,21 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(255,255,255,0.08)",
   },
   confirmButton: {
-    backgroundColor: "#F7C536",
+    backgroundColor: "#681ADB",
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center",
   },
   confirmButtonDisabled: {
-    backgroundColor: "rgba(247,197,54,0.2)",
+    backgroundColor: "rgba(104,26,219,0.2)",
   },
   confirmButtonText: {
-    color: "#080808",
+    color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
   },
   confirmButtonTextDisabled: {
-    color: "rgba(247,197,54,0.5)",
+    color: "rgba(104,26,219,0.5)",
   },
 });
