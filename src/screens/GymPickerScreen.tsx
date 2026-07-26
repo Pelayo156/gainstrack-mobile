@@ -11,10 +11,15 @@ import { APIGainsTrackGymResponse } from "../types/gym.types";
 import { gymService } from "../services/gymService";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
+import { trainingSessionService } from "../services/trainingSessionService";
+import useActiveTrainingSessionStore from "../store/useActiveTrainingSessionStore";
 
 const H_PADDING = 24;
 
 export default function GymPickerScreen({ route, navigation }: any) {
+  const { routineId } = route.params;
+  const { startTrainingSession } = useActiveTrainingSessionStore();
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -46,8 +51,32 @@ export default function GymPickerScreen({ route, navigation }: any) {
     fetchGyms();
   }, []);
 
-  const handleStartSession = () => {
-    // TODO: lógica de inicio de sesión
+  const handleStartTrainingSession = async () => {
+    console.log("INICIO EVENTO COMENZAR SESIÓN DE ENTRENAMIENTO");
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const response = await trainingSessionService.save({
+        routineId: routineId,
+        gymId: selectedGym?.id ?? null,
+      });
+
+      // Se guarda sesión recibida dentro de store
+      startTrainingSession(response, Date.now());
+
+      // Se redirige a usuario a ActiveSessionScreen
+      navigation.navigate("ActiveTrainingSession");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as APIGainstrackErrorResponse;
+        setErrorMessage(apiError.message);
+      } else {
+        setErrorMessage("Error inesperado, intente nuevamente");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,111 +92,104 @@ export default function GymPickerScreen({ route, navigation }: any) {
       </View>
 
       <View style={styles.content}>
-          <Text style={styles.question}>¿En qué gimnasio te encuentras?</Text>
+        <Text style={styles.question}>¿En qué gimnasio te encuentras?</Text>
 
-          <View style={styles.dropdownContainer}>
-            <TouchableOpacity
-              style={styles.dropdownHeader}
-              activeOpacity={0.8}
-              disabled={isLoading}
-              onPress={() => setIsDropdownOpen((prev) => !prev)}
-            >
-              <Text
-                style={[
-                  styles.dropdownHeaderText,
-                  selectedGym === null && styles.dropdownPlaceholderText,
-                ]}
-                numberOfLines={1}
-              >
-                {selectedGym ? selectedGym.name : "Selecciona un gimnasio"}
-              </Text>
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <Ionicons
-                  name={isDropdownOpen ? "chevron-up" : "chevron-down"}
-                  size={20}
-                  color="rgba(255,255,255,0.5)"
-                />
-              )}
-            </TouchableOpacity>
-
-            {isDropdownOpen && !isLoading && (
-              <View style={styles.dropdownList}>
-                {errorMessage !== null && (
-                  <Text style={styles.dropdownMessageText}>
-                    {errorMessage}
-                  </Text>
-                )}
-
-                {errorMessage === null &&
-                  (gyms === null || gyms.length === 0) && (
-                    <Text style={styles.dropdownMessageText}>
-                      No hay gimnasios disponibles
-                    </Text>
-                  )}
-
-                {errorMessage === null &&
-                  gyms !== null &&
-                  gyms.map((gym, index) => {
-                    const isSelected = selectedGym?.id === gym.id;
-                    return (
-                      <TouchableOpacity
-                        key={gym.id}
-                        style={[
-                          styles.dropdownOption,
-                          index === gyms.length - 1 &&
-                            styles.dropdownOptionLast,
-                          isSelected && styles.dropdownOptionSelected,
-                        ]}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          setSelectedGym(gym);
-                          setIsDropdownOpen(false);
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.dropdownOptionText,
-                            isSelected && styles.dropdownOptionTextSelected,
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {gym.name}
-                        </Text>
-                        {isSelected && (
-                          <Ionicons
-                            name="checkmark"
-                            size={18}
-                            color="#681ADB"
-                          />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-              </View>
-            )}
-          </View>
-
+        <View style={styles.dropdownContainer}>
           <TouchableOpacity
-            style={[
-              styles.startButton,
-              selectedGym === null && styles.startButtonDisabled,
-            ]}
+            style={styles.dropdownHeader}
             activeOpacity={0.8}
-            disabled={selectedGym === null}
-            onPress={handleStartSession}
+            disabled={isLoading}
+            onPress={() => setIsDropdownOpen((prev) => !prev)}
           >
             <Text
               style={[
-                styles.startButtonText,
-                selectedGym === null && styles.startButtonTextDisabled,
+                styles.dropdownHeaderText,
+                selectedGym === null && styles.dropdownPlaceholderText,
               ]}
+              numberOfLines={1}
             >
-              Iniciar Entrenamiento
+              {selectedGym ? selectedGym.name : "Selecciona un gimnasio"}
             </Text>
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Ionicons
+                name={isDropdownOpen ? "chevron-up" : "chevron-down"}
+                size={20}
+                color="rgba(255,255,255,0.5)"
+              />
+            )}
           </TouchableOpacity>
+
+          {isDropdownOpen && !isLoading && (
+            <View style={styles.dropdownList}>
+              {errorMessage !== null && (
+                <Text style={styles.dropdownMessageText}>{errorMessage}</Text>
+              )}
+
+              {errorMessage === null &&
+                (gyms === null || gyms.length === 0) && (
+                  <Text style={styles.dropdownMessageText}>
+                    No hay gimnasios disponibles
+                  </Text>
+                )}
+
+              {errorMessage === null &&
+                gyms !== null &&
+                gyms.map((gym, index) => {
+                  const isSelected = selectedGym?.id === gym.id;
+                  return (
+                    <TouchableOpacity
+                      key={gym.id}
+                      style={[
+                        styles.dropdownOption,
+                        index === gyms.length - 1 && styles.dropdownOptionLast,
+                        isSelected && styles.dropdownOptionSelected,
+                      ]}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setSelectedGym(gym);
+                        setIsDropdownOpen(false);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.dropdownOptionText,
+                          isSelected && styles.dropdownOptionTextSelected,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {gym.name}
+                      </Text>
+                      {isSelected && (
+                        <Ionicons name="checkmark" size={18} color="#681ADB" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+            </View>
+          )}
         </View>
+
+        <TouchableOpacity
+          style={[
+            styles.startButton,
+            selectedGym === null && styles.startButtonDisabled,
+          ]}
+          activeOpacity={0.8}
+          disabled={selectedGym === null}
+          onPress={handleStartTrainingSession}
+        >
+          <Text
+            style={[
+              styles.startButtonText,
+              selectedGym === null && styles.startButtonTextDisabled,
+            ]}
+          >
+            Iniciar Entrenamiento
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

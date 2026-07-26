@@ -61,15 +61,8 @@ export default function RoutineScreen({ navigation }: any) {
   useFocusEffect(
     useCallback(() => {
       fetchRoutines();
-    }, []),
+    }, [])
   );
-
-  /** Inicia el flujo de ejecución de una rutina seleccionada */
-  const handleStartRoutine = () => {
-    console.log("INICIO DE RUTINA");
-
-    navigation.navigate("GymPicker");
-  };
 
   /** Realiza la petición al API y actualiza el estado con las rutinas o el error obtenido */
   const fetchRoutines = async () => {
@@ -213,7 +206,10 @@ export default function RoutineScreen({ navigation }: any) {
           </>
         }
         renderItem={({ item: routine }) => (
-          <GlassCard intensity="strong" style={[styles.card, { width: cardSize }]}>
+          <GlassCard
+            intensity="strong"
+            style={[styles.card, { width: cardSize }]}
+          >
             <View>
               <View style={styles.cardTopRow}>
                 <Text style={styles.routineName} numberOfLines={2}>
@@ -299,7 +295,11 @@ export default function RoutineScreen({ navigation }: any) {
                 {formatDate(routine.createdAt)}
               </Text>
               <TouchableOpacity
-                onPress={handleStartRoutine}
+                onPress={() => {
+                  navigation.navigate("GymPicker", {
+                    routineId: routine.id,
+                  });
+                }}
                 style={styles.startButton}
                 activeOpacity={0.8}
               >

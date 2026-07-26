@@ -12,6 +12,8 @@ import useAuthStore from "./src/store/useAuthStore";
 import { useFonts } from "expo-font";
 import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import Toast from "react-native-toast-message";
+import useActiveTrainingSessionStore from "./src/store/useActiveTrainingSessionStore";
+import { APIGainstrackTrainingSessionDetailResponse } from "./src/types/trainingSession.types";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -27,20 +29,34 @@ function AppContent() {
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
+  const { startTrainingSession } = useActiveTrainingSessionStore();
   const [fontsLoaded] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-Bold": Inter_700Bold,
   });
 
   useEffect(() => {
-    const verifyUserIsAuthenticated = async () => {
+    const initialize = async () => {
       try {
-        // Se verifica que usuario esté logueado al abrir la app
+        // verificar autenticación
         const token = await AsyncStorage.getItem("token");
         const email = await AsyncStorage.getItem("email");
-
         if (token !== null && email !== null) {
           login(token, email);
+        }
+
+        // verificar sesión de entrenamiento activa
+        const activeTrainingSession = await AsyncStorage.getItem(
+          "activeTrainingSession"
+        );
+        const startTimestamp = await AsyncStorage.getItem("startTimestamp");
+        if (activeTrainingSession !== null && startTimestamp !== null) {
+          startTrainingSession(
+            JSON.parse(
+              activeTrainingSession
+            ) as APIGainstrackTrainingSessionDetailResponse,
+            Number(startTimestamp)
+          );
         }
       } catch (error) {
         console.error(error);
@@ -49,7 +65,7 @@ export default function App() {
       }
     };
 
-    verifyUserIsAuthenticated();
+    initialize();
   }, []);
 
   if (!fontsLoaded || isLoading) return <LoadingSpinner />;
