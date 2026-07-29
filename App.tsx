@@ -29,7 +29,8 @@ function AppContent() {
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
-  const { startTrainingSession } = useActiveTrainingSessionStore();
+  const { setActiveTrainingSession, setStartTimestamp } =
+    useActiveTrainingSessionStore();
   const [fontsLoaded] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-Bold": Inter_700Bold,
@@ -47,16 +48,16 @@ export default function App() {
 
         // verificar sesión de entrenamiento activa
         const activeTrainingSession = await AsyncStorage.getItem(
-          "activeTrainingSession"
+          "activeTrainingSession",
         );
         const startTimestamp = await AsyncStorage.getItem("startTimestamp");
         if (activeTrainingSession !== null && startTimestamp !== null) {
-          startTrainingSession(
+          setActiveTrainingSession(
             JSON.parse(
-              activeTrainingSession
+              activeTrainingSession,
             ) as APIGainstrackTrainingSessionDetailResponse,
-            Number(startTimestamp)
           );
+          setStartTimestamp(Number(startTimestamp));
         }
       } catch (error) {
         console.error(error);

@@ -385,13 +385,13 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           style={styles.headerIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="checkmark" size={24} color="#681ADB" />
+          <Ionicons name="checkmark" size={24} color="#AAFF00" />
         </TouchableOpacity>
       </View>
 
       {isLoading && (
         <ActivityIndicator
-          color="#681ADB"
+          color="#AAFF00"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -640,7 +640,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     activeOpacity={0.8}
                     onPress={() => handleAddSet(routineExercise.id)}
                   >
-                    <Ionicons name="add" size={16} color="#681ADB" />
+                    <Ionicons name="add" size={16} color="#AAFF00" />
                     <Text style={styles.addSetButtonText}>Agregar set</Text>
                   </TouchableOpacity>
                 </GlassCard>
@@ -650,12 +650,10 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                 style={styles.addExerciseButton}
                 activeOpacity={0.8}
                 onPress={() => {
-                  navigation.navigate("ExercisePicker", {
-                    routineId: routine.id,
-                  });
+                  navigation.navigate("ExercisePicker");
                 }}
               >
-                <Ionicons name="add" size={20} color="#681ADB" />
+                <Ionicons name="add" size={20} color="#AAFF00" />
                 <Text style={styles.addExerciseButtonText}>
                   Agregar ejercicio
                 </Text>
@@ -671,7 +669,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#060E1A",
+    backgroundColor: "#121212",
   },
   headerBar: {
     flexDirection: "row",
@@ -808,15 +806,15 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(104,26,219,0.12)",
-    borderColor: "rgba(104,26,219,0.3)",
+    backgroundColor: "rgba(170,255,0,0.12)",
+    borderColor: "rgba(170,255,0,0.3)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -825,8 +823,8 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(104,26,219,0.1)",
-    borderColor: "rgba(104,26,219,0.25)",
+    backgroundColor: "rgba(170,255,0,0.1)",
+    borderColor: "rgba(170,255,0,0.25)",
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -886,12 +884,12 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: "rgba(104,26,219,0.5)",
+    borderColor: "rgba(170,255,0,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   setBadgeText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontSize: 11,
     fontFamily: "Inter-Bold",
   },
@@ -941,10 +939,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   popover: {
-    backgroundColor: "#060E1A",
+    backgroundColor: "#1E1E1E",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "#2A2A2A",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.55,
@@ -973,15 +971,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "rgba(104,26,219,0.06)",
-    borderColor: "rgba(104,26,219,0.25)",
+    backgroundColor: "rgba(170,255,0,0.06)",
+    borderColor: "rgba(170,255,0,0.25)",
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 10,
     marginTop: 10,
   },
   addSetButtonText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontFamily: "Inter-Bold",
     fontSize: 13,
     letterSpacing: 0.5,
@@ -991,15 +989,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "rgba(104,26,219,0.08)",
-    borderColor: "rgba(104,26,219,0.3)",
+    backgroundColor: "rgba(170,255,0,0.08)",
+    borderColor: "rgba(170,255,0,0.3)",
     borderWidth: 1,
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 4,
   },
   addExerciseButtonText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
@@ -1008,7 +1006,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    backgroundColor: "#060E1A",
+    backgroundColor: "#121212",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(255,255,255,0.1)",
     paddingHorizontal: H_PADDING,
@@ -1022,7 +1020,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   keyboardToolbarButtonText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontFamily: "Inter-Bold",
     fontSize: 14,
     letterSpacing: 0.3,

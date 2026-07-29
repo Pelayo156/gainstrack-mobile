@@ -18,20 +18,19 @@ import useExercisePickerStore from "../store/useExercisePickerStore";
 const H_PADDING = 20;
 
 export default function ExercisePickerScreen({ route, navigation }: any) {
-  const { routineId } = route.params;
   const { setPickedExercise } = useExercisePickerStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [exercises, setExercises] = useState<APIGainsTrackExerciseResponse[]>(
-    []
+    [],
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExercise, setSelectedExercise] =
     useState<APIGainsTrackExerciseResponse | null>(null);
 
   useEffect(() => {
-    console.log(`INICIO VISTA DE EJERCICIOS PARA RUTINA CON ID: ${routineId}`);
+    console.log("INICIO VISTA DE EJERCICIOS");
 
     const fetchExercises = async () => {
       setIsLoading(true);
@@ -119,7 +118,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
       {isLoading && (
         <ActivityIndicator
-          color="#681ADB"
+          color="#AAFF00"
           size="large"
           style={styles.loadingIndicator}
         />
@@ -203,7 +202,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
                   ]}
                 >
                   {isSelected && (
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={16} color="#0D0D0D" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -239,7 +238,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#060E1A",
+    backgroundColor: "#121212",
   },
   headerBar: {
     flexDirection: "row",
@@ -273,8 +272,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "rgba(255,255,255,0.07)",
-    borderColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "#1E1E1E",
+    borderColor: "#2A2A2A",
     borderWidth: 1,
     borderRadius: 14,
     paddingHorizontal: 14,
@@ -324,15 +323,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.09)",
+    backgroundColor: "#1E1E1E",
+    borderColor: "#2A2A2A",
     borderWidth: 1,
     borderRadius: 16,
     padding: 14,
   },
   exerciseCardSelected: {
-    backgroundColor: "rgba(104,26,219,0.08)",
-    borderColor: "rgba(104,26,219,0.5)",
+    backgroundColor: "rgba(170,255,0,0.08)",
+    borderColor: "rgba(170,255,0,0.5)",
   },
   exerciseInfo: {
     flex: 1,
@@ -345,7 +344,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   exerciseNameSelected: {
-    color: "#681ADB",
+    color: "#AAFF00",
   },
   exerciseTagsRow: {
     flexDirection: "row",
@@ -353,19 +352,19 @@ const styles = StyleSheet.create({
   },
   muscleGroupPill: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(104,26,219,0.12)",
-    borderColor: "rgba(104,26,219,0.3)",
+    backgroundColor: "rgba(170,255,0,0.10)",
+    borderColor: "rgba(170,255,0,0.30)",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   muscleGroupPillSelected: {
-    backgroundColor: "rgba(104,26,219,0.2)",
-    borderColor: "rgba(104,26,219,0.6)",
+    backgroundColor: "rgba(170,255,0,0.20)",
+    borderColor: "rgba(170,255,0,0.60)",
   },
   muscleGroupPillText: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontSize: 11,
     fontFamily: "Inter-Bold",
     letterSpacing: 0.5,
@@ -394,9 +393,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   selectionCircleSelected: {
-    backgroundColor: "#681ADB",
-    borderColor: "#681ADB",
+    backgroundColor: "#AAFF00",
+    borderColor: "#AAFF00",
   },
+
   footer: {
     paddingHorizontal: H_PADDING,
     paddingVertical: 16,
@@ -404,21 +404,21 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(255,255,255,0.08)",
   },
   confirmButton: {
-    backgroundColor: "#681ADB",
-    borderRadius: 14,
+    backgroundColor: "#AAFF00",
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
   },
   confirmButtonDisabled: {
-    backgroundColor: "rgba(104,26,219,0.2)",
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   confirmButtonText: {
-    color: "#FFFFFF",
+    color: "#0D0D0D",
     fontFamily: "Inter-Bold",
-    fontSize: 15,
+    fontSize: 16,
     letterSpacing: 0.5,
   },
   confirmButtonTextDisabled: {
-    color: "rgba(104,26,219,0.5)",
+    color: "rgba(255,255,255,0.35)",
   },
 });

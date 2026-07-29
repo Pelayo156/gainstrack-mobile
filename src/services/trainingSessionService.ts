@@ -6,4 +6,8 @@ export const trainingSessionService = {
     const response = await apiClient.post("/sessions", saveRequest);
     return response.data;
   },
+  deleteById: async (sessionId: number) => {
+    const response = await apiClient.delete(`/sessions/${sessionId}`);
+    return response.data;
+  },
 };

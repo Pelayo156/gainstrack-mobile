@@ -5,9 +5,9 @@ import { APIGainstrackTrainingSessionDetailResponse } from "../types/trainingSes
 interface ActiveTrainingSessionStore {
   activeTrainingSession: APIGainstrackTrainingSessionDetailResponse | null;
   startTimestamp: number | null;
-  startTrainingSession: (
+  setStartTimestamp: (timestamp: number) => void;
+  setActiveTrainingSession: (
     trainingSession: APIGainstrackTrainingSessionDetailResponse,
-    timestamp: number
   ) => void;
   clearTrainingSession: () => void;
 }
@@ -16,18 +16,21 @@ const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
   (set) => ({
     activeTrainingSession: null,
     startTimestamp: null,
-    startTrainingSession: async (
+    setStartTimestamp: async (timestamp: number) => {
+      await AsyncStorage.setItem("startTimestamp", JSON.stringify(timestamp));
+      set({
+        startTimestamp: timestamp,
+      });
+    },
+    setActiveTrainingSession: async (
       trainingSession: APIGainstrackTrainingSessionDetailResponse,
-      timestamp: number
     ) => {
       await AsyncStorage.setItem(
         "activeTrainingSession",
-        JSON.stringify(trainingSession)
+        JSON.stringify(trainingSession),
       );
-      await AsyncStorage.setItem("startTimestamp", timestamp.toString());
       set({
         activeTrainingSession: trainingSession,
-        startTimestamp: timestamp,
       });
     },
     clearTrainingSession: async () => {
@@ -35,7 +38,7 @@ const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
       await AsyncStorage.removeItem("startTimestamp");
       set({ activeTrainingSession: null, startTimestamp: null });
     },
-  })
+  }),
 );
 
 export default useActiveTrainingSessionStore;

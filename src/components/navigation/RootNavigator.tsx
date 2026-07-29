@@ -10,8 +10,8 @@ import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 const Tab = createBottomTabNavigator();
 
 const TAB_BAR_STYLE = {
-  backgroundColor: "#060E1A",
-  borderTopColor: "rgba(255,255,255,0.1)",
+  backgroundColor: "#1A1A1A",
+  borderTopColor: "#2A2A2A",
   borderTopWidth: 1,
   height: 80,
   paddingTop: 8,
@@ -32,12 +32,12 @@ export default function RootNavigator() {
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: TAB_BAR_STYLE,
-        tabBarActiveTintColor: "#681ADB",
+        tabBarActiveTintColor: "#AAFF00",
         tabBarInactiveTintColor: "rgba(255,255,255,0.3)",
         tabBarLabelStyle: TAB_BAR_LABEL_STYLE,
         headerShown: false,
         sceneStyle: {
-          backgroundColor: "#060E1A",
+          backgroundColor: "#121212",
           paddingTop: insets.top + 12,
         },
       }}

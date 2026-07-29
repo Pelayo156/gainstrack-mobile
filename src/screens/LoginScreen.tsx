@@ -53,7 +53,7 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: "#060E1A" }}>
+      <View style={{ flex: 1, backgroundColor: "#121212" }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   card: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderColor: "rgba(255,255,255,0.09)",
+    backgroundColor: "#1E1E1E",
+    borderColor: "#2A2A2A",
     borderWidth: 1,
     borderRadius: 18,
     overflow: "hidden",
@@ -207,15 +207,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   loginButton: {
-    backgroundColor: "#681ADB",
-    borderRadius: 14,
+    backgroundColor: "#AAFF00",
+    borderRadius: 12,
     paddingVertical: 18,
     marginTop: 6,
   },
   loginButtonText: {
-    color: "#FFFFFF",
+    color: "#0D0D0D",
     fontFamily: "Inter-Bold",
-    fontSize: 15,
+    fontSize: 16,
     textAlign: "center",
     letterSpacing: 0.5,
   },

@@ -18,7 +18,7 @@ const H_PADDING = 24;
 
 export default function GymPickerScreen({ route, navigation }: any) {
   const { routineId } = route.params;
-  const { startTrainingSession } = useActiveTrainingSessionStore();
+  const { setActiveTrainingSession } = useActiveTrainingSessionStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,10 +63,10 @@ export default function GymPickerScreen({ route, navigation }: any) {
       });
 
       // Se guarda sesión recibida dentro de store
-      startTrainingSession(response, Date.now());
+      setActiveTrainingSession(response);
 
       // Se redirige a usuario a ActiveSessionScreen
-      navigation.navigate("ActiveTrainingSession");
+      navigation.replace("ActiveTrainingSession");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiError = error.response?.data as APIGainstrackErrorResponse;
@@ -162,7 +162,7 @@ export default function GymPickerScreen({ route, navigation }: any) {
                         {gym.name}
                       </Text>
                       {isSelected && (
-                        <Ionicons name="checkmark" size={18} color="#681ADB" />
+                        <Ionicons name="checkmark" size={18} color="#AAFF00" />
                       )}
                     </TouchableOpacity>
                   );
@@ -197,7 +197,7 @@ export default function GymPickerScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: "#681ADB",
+    backgroundColor: "#121212",
   },
   headerBar: {
     flexDirection: "row",
@@ -242,10 +242,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#060E1A",
+    backgroundColor: "#1E1E1E",
     borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
   },
   dropdownHeaderText: {
     flex: 1,
@@ -263,12 +265,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 8,
-    backgroundColor: "#060E1A",
+    backgroundColor: "#1E1E1E",
     borderRadius: 16,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 12,
     elevation: 12,
   },
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   dropdownOptionSelected: {
-    backgroundColor: "rgba(104,26,219,0.12)",
+    backgroundColor: "rgba(170,255,0,0.10)",
   },
   dropdownOptionText: {
     flex: 1,
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   dropdownOptionTextSelected: {
-    color: "#681ADB",
+    color: "#AAFF00",
     fontFamily: "Inter-Bold",
   },
   dropdownMessageText: {
@@ -305,21 +309,21 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   startButton: {
-    backgroundColor: "#060E1A",
-    borderRadius: 14,
+    backgroundColor: "#AAFF00",
+    borderRadius: 12,
     paddingVertical: 18,
     alignItems: "center",
   },
   startButtonDisabled: {
-    backgroundColor: "rgba(8,8,8,0.3)",
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   startButtonText: {
-    color: "#FFFFFF",
+    color: "#0D0D0D",
     fontFamily: "Inter-Bold",
-    fontSize: 15,
+    fontSize: 16,
     letterSpacing: 0.5,
   },
   startButtonTextDisabled: {
-    color: "rgba(104,26,219,0.5)",
+    color: "rgba(255,255,255,0.35)",
   },
 });

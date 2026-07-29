@@ -11,32 +11,25 @@ type GlassCardProps = {
 
 const INTENSITY_STYLES: Record<GlassCardIntensity, ViewStyle> = {
   subtle: {
-    borderColor: "rgba(255,255,255,0.16)",
-    borderTopColor: "rgba(255,255,255,0.28)",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     elevation: 3,
   },
   default: {
-    borderColor: "rgba(255,255,255,0.22)",
-    borderTopColor: "rgba(255,255,255,0.38)",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
     elevation: 6,
   },
   strong: {
-    borderColor: "rgba(255,255,255,0.28)",
-    borderTopColor: "rgba(255,255,255,0.45)",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
     elevation: 8,
   },
 };
 
-/** Caja con estilo glassmorphism reutilizable, tono morado de marca sobre fondo oscuro */
 export default function GlassCard({
   children,
   style,
@@ -51,8 +44,9 @@ export default function GlassCard({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: "rgba(104,26,219,0.06)",
+    backgroundColor: "#1E1E1E",
     borderWidth: 1,
+    borderColor: "#2A2A2A",
     borderRadius: 20,
     padding: 16,
     overflow: "hidden",

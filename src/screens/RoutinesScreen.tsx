@@ -22,6 +22,8 @@ import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
 import GlassCard from "../components/ui/GlassCard";
+import useActiveTrainingSessionStore from "../store/useActiveTrainingSessionStore";
+import ActiveSessionFAB from "../components/ui/ActiveSessionFAB";
 
 const H_PADDING = 20;
 const CARD_GAP = 16;
@@ -37,6 +39,7 @@ function formatDate(date: Date): string {
 
 export default function RoutineScreen({ navigation }: any) {
   const { logout } = useAuthStore();
+  const { activeTrainingSession } = useActiveTrainingSessionStore();
   const { width } = useWindowDimensions();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +64,7 @@ export default function RoutineScreen({ navigation }: any) {
   useFocusEffect(
     useCallback(() => {
       fetchRoutines();
-    }, [])
+    }, []),
   );
 
   /** Realiza la petición al API y actualiza el estado con las rutinas o el error obtenido */
@@ -156,11 +159,14 @@ export default function RoutineScreen({ navigation }: any) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#060E1A" }}>
+    <View style={{ flex: 1, backgroundColor: "#121212" }}>
       <FlatList
         data={!isLoading && errorMessage === null ? routinesItems : []}
         keyExtractor={(routine) => routine.id.toString()}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          activeTrainingSession !== null && { paddingBottom: 120 },
+        ]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
@@ -179,7 +185,7 @@ export default function RoutineScreen({ navigation }: any) {
 
             {isLoading && (
               <ActivityIndicator
-                color="#681ADB"
+                color="#AAFF00"
                 size="large"
                 style={{ marginTop: 40 }}
               />
@@ -398,6 +404,12 @@ export default function RoutineScreen({ navigation }: any) {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      <ActiveSessionFAB
+        onPress={() => {
+          navigation.navigate("ActiveTrainingSession");
+        }}
+      />
     </View>
   );
 }
@@ -473,10 +485,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   popover: {
-    backgroundColor: "#060E1A",
+    backgroundColor: "#1E1E1E",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: "#2A2A2A",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.55,
@@ -528,48 +540,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   openModalButton: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderColor: "#2A2A2A",
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 20,
   },
   openModalButtonText: {
-    color: "#FFFFFF",
+    color: "#AAFF00",
     fontFamily: "Inter-Bold",
     fontSize: 15,
     letterSpacing: 0.5,
   },
   createButton: {
-    backgroundColor: "#681ADB",
-    borderRadius: 14,
+    backgroundColor: "#AAFF00",
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 20,
   },
   createButtonText: {
-    color: "#FFFFFF",
+    color: "#0D0D0D",
     fontFamily: "Inter-Bold",
-    fontSize: 15,
+    fontSize: 16,
     letterSpacing: 0.5,
   },
   startButton: {
-    backgroundColor: "#681ADB",
-    borderRadius: 10,
+    backgroundColor: "#AAFF00",
+    borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
   },
   startButtonText: {
-    color: "#FFFFFF",
+    color: "#0D0D0D",
     fontFamily: "Inter-Bold",
     fontSize: 13,
     letterSpacing: 0.5,
   },
   createRoutineModalView: {
     width: "100%",
-    backgroundColor: "rgba(6,13,24,0.96)",
+    backgroundColor: "#1A1A1A",
     borderRadius: 28,
     padding: 24,
   },
