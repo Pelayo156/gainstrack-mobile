@@ -29,3 +29,21 @@ export interface APIGainstrackSaveTrainingSessionRequest {
   routineId: number;
   gymId: number | null;
 }
+
+export interface APIGainsTrackSaveExerciseTrainingSessionRequest {
+  exerciseId: number;
+  orderIndex: number;
+}
+
+export interface APIGainstrackUpdateExerciseTrainingSessionRequest {
+  exerciseId: number;
+  orderIndex: number;
+  notes: string;
+}
+
+export interface APIGainstrackSaveTrainingSessionExerciseSet {
+  setNumber: number;
+  weight: number | null;
+  reps: number | null;
+  notes: null | string;
+}
