@@ -9,6 +9,10 @@ import {
 import apiClient from "./apiClient";
 
 export const trainingSessionService = {
+  findAll: async () => {
+    const response = await apiClient.get("/sessions");
+    return response.data;
+  },
   save: async (saveRequest: APIGainstrackSaveTrainingSessionRequest) => {
     const response = await apiClient.post("/sessions", saveRequest);
     return response.data;

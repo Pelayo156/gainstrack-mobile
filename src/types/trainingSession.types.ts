@@ -1,6 +1,13 @@
 import { APIGainsTrackExerciseResponse } from "./exercise.types";
 import { APIGainsTrackGymResponse } from "./gym.types";
 
+export interface APIGainstrackTrainingSessionSummaryResponse {
+  id: number;
+  gym: APIGainsTrackGymResponse;
+  sessionDate: Date;
+  notes: string;
+}
+
 export interface APIGainstrackTrainingSessionDetailResponse {
   id: number;
   gym: APIGainsTrackGymResponse;
