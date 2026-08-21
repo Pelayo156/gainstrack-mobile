@@ -3,14 +3,21 @@ import {
   APIGainstrackSaveTrainingSessionExerciseSet,
   APIGainstrackSaveTrainingSessionRequest,
   APIGainstrackTrainingSessionDetailResponse,
+  APIGainstrackTrainingSessionSummaryResponse,
   APIGainstrackUpdateExerciseTrainingSessionRequest,
   TrainingSessionSet,
 } from "../types/trainingSession.types";
 import apiClient from "./apiClient";
 
 export const trainingSessionService = {
-  findAll: async () => {
+  findAll: async (): Promise<APIGainstrackTrainingSessionSummaryResponse[]> => {
     const response = await apiClient.get("/sessions");
+    return response.data;
+  },
+  findById: async (
+    id: number,
+  ): Promise<APIGainstrackTrainingSessionDetailResponse> => {
+    const response = await apiClient.get(`/sessions/${id}`);
     return response.data;
   },
   save: async (saveRequest: APIGainstrackSaveTrainingSessionRequest) => {

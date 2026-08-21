@@ -126,6 +126,10 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     }, 120);
   };
 
+  const handleBackToMenu = () => {
+    navigation.navigate("Routines");
+  };
+
   const handleDeleteSession = () => {
     Alert.alert(
       "Eliminar sesión",
@@ -428,18 +432,28 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     <View style={styles.flex}>
       {/* Header */}
       <View style={styles.headerBar}>
-        <TouchableOpacity
-          style={styles.deleteSessionButton}
-          activeOpacity={0.8}
-          onPress={handleDeleteSession}
-        >
-          <Ionicons
-            name="trash-outline"
-            size={14}
-            color="rgba(255,75,75,0.9)"
-          />
-          <Text style={styles.deleteSessionButtonText}>Eliminar</Text>
-        </TouchableOpacity>
+        <View style={styles.headerLeftGroup}>
+          <TouchableOpacity
+            style={styles.backButton}
+            activeOpacity={0.8}
+            onPress={handleBackToMenu}
+          >
+            <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.deleteSessionButton}
+            activeOpacity={0.8}
+            onPress={handleDeleteSession}
+          >
+            <Ionicons
+              name="trash-outline"
+              size={14}
+              color="rgba(255,75,75,0.9)"
+            />
+            <Text style={styles.deleteSessionButtonText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.timerCompact}>
           <View style={styles.timerDot} />
@@ -737,6 +751,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: H_PADDING,
     paddingTop: 14,
     paddingBottom: 14,
+  },
+  headerLeftGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
+    alignItems: "center",
+    justifyContent: "center",
   },
   timerCompact: {
     flexDirection: "row",

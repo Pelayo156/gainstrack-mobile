@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import HistoryScreen from "../../screens/HistoryScreen";
 import useAuthStore from "../../store/useAuthStore";
 import AuthNavigator from "./AuthNavigator";
 import RoutineStackNavigator from "./RoutineStackNavigator";
+import HistoryStackNavigator from "./HistoryStackNavigator";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
@@ -52,19 +52,24 @@ export default function RootNavigator() {
           tabBarStyle:
             getFocusedRouteNameFromRoute(route) === "EditRoutine" ||
             getFocusedRouteNameFromRoute(route) === "ExercisePicker" ||
-            getFocusedRouteNameFromRoute(route) === "GymPicker"
+            getFocusedRouteNameFromRoute(route) === "GymPicker" ||
+            getFocusedRouteNameFromRoute(route) === "ActiveTrainingSession"
               ? { display: "none" }
               : TAB_BAR_STYLE,
         })}
       />
       <Tab.Screen
         name="Historial"
-        component={HistoryScreen}
-        options={{
+        component={HistoryStackNavigator}
+        options={({ route }) => ({
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),
-        }}
+          tabBarStyle:
+            getFocusedRouteNameFromRoute(route) === "TrainingSessionDetail"
+              ? { display: "none" }
+              : TAB_BAR_STYLE,
+        })}
       />
     </Tab.Navigator>
   ) : (
