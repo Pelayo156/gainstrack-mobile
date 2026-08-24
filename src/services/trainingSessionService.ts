@@ -5,6 +5,7 @@ import {
   APIGainstrackTrainingSessionDetailResponse,
   APIGainstrackTrainingSessionSummaryResponse,
   APIGainstrackUpdateExerciseTrainingSessionRequest,
+  APIGainstrackUpdateTrainingSessionRequest,
   TrainingSessionSet,
 } from "../types/trainingSession.types";
 import apiClient from "./apiClient";
@@ -20,12 +21,28 @@ export const trainingSessionService = {
     const response = await apiClient.get(`/sessions/${id}`);
     return response.data;
   },
+  findfindAllByRoutineAndGym: async (
+    routineId: number,
+    gymId: number,
+  ): Promise<APIGainstrackTrainingSessionSummaryResponse[]> => {
+    const response = await apiClient.get(
+      `/sessions/history?routineId=${routineId}&gymId=${gymId}`,
+    );
+    return response.data;
+  },
   save: async (saveRequest: APIGainstrackSaveTrainingSessionRequest) => {
     const response = await apiClient.post("/sessions", saveRequest);
     return response.data;
   },
   deleteById: async (id: number) => {
     const response = await apiClient.delete(`/sessions/${id}`);
+    return response.data;
+  },
+  updateSession: async (
+    id: number,
+    updateRequest: APIGainstrackUpdateTrainingSessionRequest,
+  ): Promise<APIGainstrackTrainingSessionDetailResponse> => {
+    const response = await apiClient.patch(`/sessions/${id}`, updateRequest);
     return response.data;
   },
   saveExercise: async (

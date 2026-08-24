@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -12,7 +13,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import ActiveSessionFAB from "../components/ui/ActiveSessionFAB";
 import GlassCard from "../components/ui/GlassCard";
+import { routineService } from "../services/routineService";
+import { gymService } from "../services/gymService";
 import { trainingSessionService } from "../services/trainingSessionService";
+import { APIGainstrackRoutineSummaryResponse } from "../types/routine.types";
+import { APIGainsTrackGymResponse } from "../types/gym.types";
 import { APIGainstrackTrainingSessionSummaryResponse } from "../types/trainingSession.types";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 
@@ -29,41 +34,99 @@ function formatDate(date: Date): string {
 }
 
 export default function HistoryScreen({ navigation }: any) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoadingFilters, setIsLoadingFilters] = useState(false);
+  const [filtersErrorMessage, setFiltersErrorMessage] = useState<
+    string | null
+  >(null);
+  const [routines, setRoutines] = useState<
+    APIGainstrackRoutineSummaryResponse[]
+  >([]);
+  const [gyms, setGyms] = useState<APIGainsTrackGymResponse[]>([]);
+  const [selectedRoutine, setSelectedRoutine] =
+    useState<APIGainstrackRoutineSummaryResponse | null>(null);
+  const [selectedGym, setSelectedGym] =
+    useState<APIGainsTrackGymResponse | null>(null);
+
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [sessionsErrorMessage, setSessionsErrorMessage] = useState<
+    string | null
+  >(null);
   const [sessions, setSessions] = useState<
     APIGainstrackTrainingSessionSummaryResponse[]
   >([]);
 
-  /** Carga el historial de sesiones de entrenamiento del usuario cada vez que la pantalla toma foco */
+  /** Carga las rutinas y gimnasios del usuario cada vez que la pantalla toma foco */
   useFocusEffect(
     useCallback(() => {
-      fetchSessions();
+      fetchFilters();
     }, []),
   );
 
-  const fetchSessions = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const fetchFilters = async () => {
+    setIsLoadingFilters(true);
+    setFiltersErrorMessage(null);
     try {
-      const response = await trainingSessionService.findAll();
-      setSessions(response);
+      const [routinesResponse, gymsResponse] = await Promise.all([
+        routineService.findAll(),
+        gymService.findAll(),
+      ]);
+      setRoutines(routinesResponse);
+      setGyms(gymsResponse);
+      setSelectedRoutine(routinesResponse[0] ?? null);
+      setSelectedGym(gymsResponse[0] ?? null);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
+        setFiltersErrorMessage(apiError.message);
       } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
+        setFiltersErrorMessage("Error inesperado, intente nuevamente");
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingFilters(false);
     }
   };
+
+  /** Carga las sesiones de entrenamiento filtradas por la rutina y gimnasio seleccionados */
+  useEffect(() => {
+    if (selectedRoutine === null || selectedGym === null) {
+      setSessions([]);
+      return;
+    }
+
+    const fetchSessions = async () => {
+      setIsLoadingSessions(true);
+      setSessionsErrorMessage(null);
+      try {
+        const response =
+          await trainingSessionService.findfindAllByRoutineAndGym(
+            selectedRoutine.id,
+            selectedGym.id,
+          );
+        setSessions(response);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const apiError = error.response?.data as APIGainstrackErrorResponse;
+          setSessionsErrorMessage(apiError.message);
+        } else {
+          setSessionsErrorMessage("Error inesperado, intente nuevamente");
+        }
+      } finally {
+        setIsLoadingSessions(false);
+      }
+    };
+    fetchSessions();
+  }, [selectedRoutine, selectedGym]);
+
+  const hasFilters = routines.length > 0 && gyms.length > 0;
+  const isLoading = isLoadingFilters || isLoadingSessions;
+  const errorMessage = filtersErrorMessage ?? sessionsErrorMessage;
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={!isLoading && errorMessage === null ? sessions : []}
+        data={
+          !isLoading && errorMessage === null && hasFilters ? sessions : []
+        }
         keyExtractor={(session) => session.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -74,7 +137,7 @@ export default function HistoryScreen({ navigation }: any) {
               <Text style={styles.subtitle}>TUS SESIONES PASADAS</Text>
             </View>
 
-            {isLoading && (
+            {isLoadingFilters && (
               <ActivityIndicator
                 color="#AAFF00"
                 size="large"
@@ -82,27 +145,140 @@ export default function HistoryScreen({ navigation }: any) {
               />
             )}
 
-            {!isLoading && errorMessage !== null && (
+            {!isLoadingFilters && filtersErrorMessage !== null && (
               <View style={styles.errorBanner}>
                 <Ionicons
                   name="alert-circle-outline"
                   size={18}
                   color="rgba(255,90,90,0.9)"
                 />
-                <Text style={styles.errorText}>{errorMessage}</Text>
+                <Text style={styles.errorText}>{filtersErrorMessage}</Text>
               </View>
             )}
 
-            {!isLoading && errorMessage === null && sessions.length === 0 && (
-              <View style={styles.emptyState}>
-                <Ionicons
-                  name="time-outline"
-                  size={48}
-                  color="rgba(255,255,255,0.1)"
-                />
-                <Text style={styles.emptyText}>Sin historial aún</Text>
-              </View>
+            {!isLoadingFilters &&
+              filtersErrorMessage === null &&
+              !hasFilters && (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    name="time-outline"
+                    size={48}
+                    color="rgba(255,255,255,0.1)"
+                  />
+                  <Text style={styles.emptyText}>
+                    Necesitas al menos una rutina y un gimnasio guardados
+                    para ver el historial
+                  </Text>
+                </View>
+              )}
+
+            {!isLoadingFilters && filtersErrorMessage === null && hasFilters && (
+              <>
+                <Text style={styles.filterLabel}>RUTINA</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipRow}
+                  style={styles.chipScroll}
+                >
+                  {routines.map((routine) => {
+                    const isSelected = selectedRoutine?.id === routine.id;
+                    return (
+                      <TouchableOpacity
+                        key={routine.id}
+                        activeOpacity={0.8}
+                        style={[styles.chip, isSelected && styles.chipSelected]}
+                        onPress={() => setSelectedRoutine(routine)}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            isSelected && styles.chipTextSelected,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {routine.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+
+                <Text style={styles.filterLabel}>GIMNASIO</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipRow}
+                  style={styles.chipScroll}
+                >
+                  {gyms.map((gym) => {
+                    const isSelected = selectedGym?.id === gym.id;
+                    return (
+                      <TouchableOpacity
+                        key={gym.id}
+                        activeOpacity={0.8}
+                        style={[styles.chip, isSelected && styles.chipSelected]}
+                        onPress={() => setSelectedGym(gym)}
+                      >
+                        <Text
+                          style={[
+                            styles.chipText,
+                            isSelected && styles.chipTextSelected,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {gym.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </>
             )}
+
+            {!isLoadingFilters &&
+              filtersErrorMessage === null &&
+              hasFilters &&
+              isLoadingSessions && (
+                <ActivityIndicator
+                  color="#AAFF00"
+                  size="large"
+                  style={{ marginTop: 24 }}
+                />
+              )}
+
+            {!isLoadingFilters &&
+              filtersErrorMessage === null &&
+              hasFilters &&
+              !isLoadingSessions &&
+              sessionsErrorMessage !== null && (
+                <View style={styles.errorBanner}>
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={18}
+                    color="rgba(255,90,90,0.9)"
+                  />
+                  <Text style={styles.errorText}>{sessionsErrorMessage}</Text>
+                </View>
+              )}
+
+            {!isLoadingFilters &&
+              filtersErrorMessage === null &&
+              hasFilters &&
+              !isLoadingSessions &&
+              sessionsErrorMessage === null &&
+              sessions.length === 0 && (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    name="time-outline"
+                    size={48}
+                    color="rgba(255,255,255,0.1)"
+                  />
+                  <Text style={styles.emptyText}>
+                    Sin sesiones para esta rutina en este gimnasio
+                  </Text>
+                </View>
+              )}
           </>
         }
         renderItem={({ item: session }) => (
@@ -115,21 +291,9 @@ export default function HistoryScreen({ navigation }: any) {
             }
           >
             <GlassCard intensity="strong" style={styles.card}>
-              <View style={styles.cardTopRow}>
-                <View style={styles.gymRow}>
-                  <Ionicons
-                    name="location-outline"
-                    size={16}
-                    color="rgba(255,255,255,0.4)"
-                  />
-                  <Text style={styles.gymName} numberOfLines={1}>
-                    {session.gym ? session.gym.name : "Sin gimnasio"}
-                  </Text>
-                </View>
-                <Text style={styles.sessionDate}>
-                  {formatDate(session.sessionDate)}
-                </Text>
-              </View>
+              <Text style={styles.sessionDate}>
+                {formatDate(session.sessionDate)}
+              </Text>
               <Text style={styles.sessionNotes} numberOfLines={3}>
                 {session.notes ?? "Sin notas"}
               </Text>
@@ -173,6 +337,42 @@ const styles = StyleSheet.create({
     gap: CARD_GAP,
     paddingBottom: 32,
   },
+  filterLabel: {
+    color: "rgba(255,255,255,0.3)",
+    fontFamily: "Inter-Bold",
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: 10,
+  },
+  chipScroll: {
+    marginBottom: 20,
+  },
+  chipRow: {
+    gap: 10,
+    paddingRight: H_PADDING,
+  },
+  chip: {
+    backgroundColor: "#1E1E1E",
+    borderColor: "#2A2A2A",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxWidth: 200,
+  },
+  chipSelected: {
+    backgroundColor: "#AAFF00",
+    borderColor: "#AAFF00",
+  },
+  chipText: {
+    color: "rgba(255,255,255,0.8)",
+    fontFamily: "Inter-Bold",
+    fontSize: 13,
+    letterSpacing: 0.2,
+  },
+  chipTextSelected: {
+    color: "#0D0D0D",
+  },
   errorBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -198,35 +398,17 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.3)",
     fontSize: 15,
     letterSpacing: 1,
+    textAlign: "center",
   },
   card: {
     borderRadius: 24,
     padding: 18,
   },
-  cardTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  gymRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    flex: 1,
-    marginRight: 10,
-  },
-  gymName: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.3,
-  },
   sessionDate: {
     color: "rgba(255,255,255,0.35)",
     fontSize: 11,
     letterSpacing: 0.3,
+    marginBottom: 10,
   },
   sessionNotes: {
     color: "rgba(255,255,255,0.35)",

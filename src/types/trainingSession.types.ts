@@ -54,3 +54,7 @@ export interface APIGainstrackSaveTrainingSessionExerciseSet {
   reps: number | null;
   notes: null | string;
 }
+
+export interface APIGainstrackUpdateTrainingSessionRequest {
+  notes: string | null;
+}

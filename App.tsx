@@ -29,7 +29,7 @@ function AppContent() {
 
 export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
-  const { setActiveTrainingSession, setStartTimestamp } =
+  const { restoreTrainingSession, setStartTimestamp } =
     useActiveTrainingSessionStore();
   const [fontsLoaded] = useFonts({
     "Inter-Regular": Inter_400Regular,
@@ -47,16 +47,33 @@ export default function App() {
         }
 
         // verificar sesión de entrenamiento activa
+        const originalTrainingSession = await AsyncStorage.getItem(
+          "originalTrainingSession",
+        );
         const activeTrainingSession = await AsyncStorage.getItem(
           "activeTrainingSession",
         );
+        const completedSetIds = await AsyncStorage.getItem(
+          "completedSetIds",
+        );
         const startTimestamp = await AsyncStorage.getItem("startTimestamp");
-        if (activeTrainingSession !== null && startTimestamp !== null) {
-          setActiveTrainingSession(
-            JSON.parse(
+        if (
+          originalTrainingSession !== null &&
+          activeTrainingSession !== null &&
+          startTimestamp !== null
+        ) {
+          restoreTrainingSession({
+            originalTrainingSession: JSON.parse(
+              originalTrainingSession,
+            ) as APIGainstrackTrainingSessionDetailResponse,
+            activeTrainingSession: JSON.parse(
               activeTrainingSession,
             ) as APIGainstrackTrainingSessionDetailResponse,
-          );
+            completedSetIds:
+              completedSetIds !== null
+                ? (JSON.parse(completedSetIds) as number[])
+                : [],
+          });
           setStartTimestamp(Number(startTimestamp));
         }
       } catch (error) {

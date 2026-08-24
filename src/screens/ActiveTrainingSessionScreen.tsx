@@ -32,18 +32,18 @@ const H_PADDING = 20;
 
 export default function ActiveTrainingSessionScreen({ navigation }: any) {
   const {
+    originalTrainingSession,
     activeTrainingSession,
     startTimestamp,
+    completedSetIds,
     setStartTimestamp,
+    updateActiveTrainingSession,
+    toggleCompletedSetId,
     clearTrainingSession,
   } = useActiveTrainingSessionStore();
 
-  const [trainingSession, setTrainingSession] = useState(activeTrainingSession);
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
     null,
-  );
-  const [completedSetIds, setCompletedSetIds] = useState<Set<number>>(
-    new Set(),
   );
 
   const [isLoading, setIsLoading] = useState(false);
@@ -51,44 +51,26 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
 
   const { pickedExercise, clearPickedExercise } = useExercisePickerStore();
 
-  const toggleSetCompleted = (setId: number) => {
-    setCompletedSetIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(setId)) next.delete(setId);
-      else next.add(setId);
-      return next;
-    });
-  };
-
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    if (activeTrainingSession !== null && trainingSession === null) {
-      setTrainingSession(activeTrainingSession);
-    }
-  }, [activeTrainingSession]);
-
   useFocusEffect(
     useCallback(() => {
       if (pickedExercise !== null) {
-        setTrainingSession((prev) => {
-          if (prev === null) return prev;
-          return {
-            ...prev,
-            exercises: [
-              ...prev.exercises,
-              {
-                id: -Date.now(),
-                orderIndex: prev.exercises.length + 1,
-                notes: "",
-                exercise: pickedExercise,
-                sets: [],
-              },
-            ],
-          };
-        });
+        updateActiveTrainingSession((prev) => ({
+          ...prev,
+          exercises: [
+            ...prev.exercises,
+            {
+              id: -Date.now(),
+              orderIndex: prev.exercises.length + 1,
+              notes: "",
+              exercise: pickedExercise,
+              sets: [],
+            },
+          ],
+        }));
         clearPickedExercise();
       }
     }, [pickedExercise]),
@@ -170,16 +152,13 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   };
 
   const handleUpdateSessionNotes = (notes: string) => {
-    setTrainingSession((prev) => {
-      if (prev === null) return prev;
-      return { ...prev, notes };
-    });
+    updateActiveTrainingSession((prev) => ({ ...prev, notes }));
   };
 
   const handleDeleteExercise = () => {
-    setTrainingSession((prev) => ({
-      ...prev!,
-      exercises: prev!.exercises
+    updateActiveTrainingSession((prev) => ({
+      ...prev,
+      exercises: prev.exercises
         .filter((exercise) => exercise.id !== openExerciseMenuId)
         .map((exercise, index) => ({ ...exercise, orderIndex: index + 1 })),
     }));
@@ -191,9 +170,9 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     setId: number,
     value: string,
   ) => {
-    setTrainingSession((prev) => ({
-      ...prev!,
-      exercises: prev!.exercises.map((exercise) =>
+    updateActiveTrainingSession((prev) => ({
+      ...prev,
+      exercises: prev.exercises.map((exercise) =>
         exercise.id !== exerciseId
           ? exercise
           : {
@@ -213,9 +192,9 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     setId: number,
     value: string,
   ) => {
-    setTrainingSession((prev) => ({
-      ...prev!,
-      exercises: prev!.exercises.map((exercise) =>
+    updateActiveTrainingSession((prev) => ({
+      ...prev,
+      exercises: prev.exercises.map((exercise) =>
         exercise.id !== exerciseId
           ? exercise
           : {
@@ -231,9 +210,9 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   };
 
   const handleDeleteSet = (exerciseId: number, setId: number) => {
-    setTrainingSession((prev) => ({
-      ...prev!,
-      exercises: prev!.exercises.map((exercise) =>
+    updateActiveTrainingSession((prev) => ({
+      ...prev,
+      exercises: prev.exercises.map((exercise) =>
         exercise.id !== exerciseId
           ? exercise
           : {
@@ -247,9 +226,9 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   };
 
   const handleAddSet = (exerciseId: number) => {
-    setTrainingSession((prev) => ({
-      ...prev!,
-      exercises: prev!.exercises.map((exercise) =>
+    updateActiveTrainingSession((prev) => ({
+      ...prev,
+      exercises: prev.exercises.map((exercise) =>
         exercise.id !== exerciseId
           ? exercise
           : {
@@ -270,7 +249,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   };
 
   const handleFinalizeSession = async () => {
-    if (trainingSession === null || activeTrainingSession === null) {
+    if (activeTrainingSession === null || originalTrainingSession === null) {
       setErrorMessage("Hubo un problema al momento de finalizar la sesión.");
       return;
     }
@@ -279,18 +258,25 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     setErrorMessage(null);
 
     try {
-      const sessionId = trainingSession.id;
+      const sessionId = activeTrainingSession.id;
+
+      // Se sincroniza la nota general de la sesión si fue editada
+      if (activeTrainingSession.notes !== originalTrainingSession.notes) {
+        await trainingSessionService.updateSession(sessionId, {
+          notes: activeTrainingSession.notes,
+        });
+      }
 
       // Ejercicios eliminados
-      const deletedExercises = activeTrainingSession.exercises.filter(
+      const deletedExercises = originalTrainingSession.exercises.filter(
         (original) =>
-          !trainingSession.exercises.some(
+          !activeTrainingSession.exercises.some(
             (current) => current.id === original.id,
           ),
       );
 
       // Ejercicios nuevos
-      const newExercises = trainingSession.exercises.filter(
+      const newExercises = activeTrainingSession.exercises.filter(
         (exercise) => exercise.id < 0,
       );
 
@@ -333,10 +319,10 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
 
       // Se sincronizan los sets de ejercicios existentes dentro de la sesión
       await Promise.all(
-        trainingSession.exercises
+        activeTrainingSession.exercises
           .filter((exercise) => exercise.id > 0)
           .flatMap((exercise) => {
-            const originalExercise = activeTrainingSession.exercises.find(
+            const originalExercise = originalTrainingSession.exercises.find(
               (original) => original.id === exercise.id,
             );
 
@@ -426,7 +412,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  if (trainingSession === null) return null;
+  if (activeTrainingSession === null) return null;
 
   return (
     <View style={styles.flex}>
@@ -493,7 +479,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                 <Text style={styles.notesCardLabel}>Notas de la sesión</Text>
               </View>
               <TextInput
-                value={trainingSession.notes ?? ""}
+                value={activeTrainingSession.notes ?? ""}
                 placeholder="Sin notas"
                 placeholderTextColor="rgba(255,255,255,0.3)"
                 style={styles.notesInput}
@@ -504,7 +490,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
             </GlassCard>
 
             {/* Exercises */}
-            {trainingSession.exercises.length === 0 && (
+            {activeTrainingSession.exercises.length === 0 && (
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>
                   Sin ejercicios aún. Agrega uno abajo.
@@ -512,7 +498,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
               </View>
             )}
 
-            {trainingSession.exercises
+            {activeTrainingSession.exercises
               .slice()
               .sort((a, b) => a.orderIndex - b.orderIndex)
               .map((ex: TrainingSessionExercise) => (
@@ -679,7 +665,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                                   styles.checkButtonCompleted,
                               ]}
                               activeOpacity={0.7}
-                              onPress={() => toggleSetCompleted(set.id)}
+                              onPress={() => toggleCompletedSetId(set.id)}
                             >
                               <Ionicons
                                 name="checkmark"
