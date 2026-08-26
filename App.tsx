@@ -47,22 +47,26 @@ export default function App() {
         }
 
         // verificar sesión de entrenamiento activa
+        const routineId = await AsyncStorage.getItem("routineId");
+        const gymId = await AsyncStorage.getItem("gymId");
         const originalTrainingSession = await AsyncStorage.getItem(
           "originalTrainingSession",
         );
         const activeTrainingSession = await AsyncStorage.getItem(
           "activeTrainingSession",
         );
-        const completedSetIds = await AsyncStorage.getItem(
-          "completedSetIds",
-        );
+        const completedSetIds = await AsyncStorage.getItem("completedSetIds");
         const startTimestamp = await AsyncStorage.getItem("startTimestamp");
         if (
+          routineId !== null &&
+          gymId !== null &&
           originalTrainingSession !== null &&
           activeTrainingSession !== null &&
           startTimestamp !== null
         ) {
           restoreTrainingSession({
+            routineId: JSON.parse(routineId) as number,
+            gymId: JSON.parse(gymId) as number,
             originalTrainingSession: JSON.parse(
               originalTrainingSession,
             ) as APIGainstrackTrainingSessionDetailResponse,

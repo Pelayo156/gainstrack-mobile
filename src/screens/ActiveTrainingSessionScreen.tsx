@@ -32,7 +32,8 @@ const H_PADDING = 20;
 
 export default function ActiveTrainingSessionScreen({ navigation }: any) {
   const {
-    originalTrainingSession,
+    routineId,
+    gymId,
     activeTrainingSession,
     startTimestamp,
     completedSetIds,
@@ -127,28 +128,12 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     );
   };
 
-  const handleConfirmDeleteSession = async () => {
-    if (activeTrainingSession === null) return;
-
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      await trainingSessionService.deleteById(activeTrainingSession.id);
-      clearTrainingSession();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Routines" }],
-      });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
-      } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  const handleConfirmDeleteSession = () => {
+    clearTrainingSession();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Routines" }],
+    });
   };
 
   const handleUpdateSessionNotes = (notes: string) => {
@@ -249,7 +234,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   };
 
   const handleFinalizeSession = async () => {
-    if (activeTrainingSession === null || originalTrainingSession === null) {
+    if (activeTrainingSession === null || routineId === null || gymId === null) {
       setErrorMessage("Hubo un problema al momento de finalizar la sesión.");
       return;
     }
@@ -258,135 +243,26 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     setErrorMessage(null);
 
     try {
-      const sessionId = activeTrainingSession.id;
-
-      // Se sincroniza la nota general de la sesión si fue editada
-      if (activeTrainingSession.notes !== originalTrainingSession.notes) {
-        await trainingSessionService.updateSession(sessionId, {
-          notes: activeTrainingSession.notes,
-        });
-      }
-
-      // Ejercicios eliminados
-      const deletedExercises = originalTrainingSession.exercises.filter(
-        (original) =>
-          !activeTrainingSession.exercises.some(
-            (current) => current.id === original.id,
-          ),
-      );
-
-      // Ejercicios nuevos
-      const newExercises = activeTrainingSession.exercises.filter(
-        (exercise) => exercise.id < 0,
-      );
-
-      // Se eliminan ejercicios de la sesión desde el backend
-      await Promise.all(
-        deletedExercises.map((exercise) =>
-          trainingSessionService.deleteExerciseById(sessionId, exercise.id),
-        ),
-      );
-
-      // Se agregan ejercicios nuevos a la sesión desde el backend
-      const createdExercises = await Promise.all(
-        newExercises.map((exercise) =>
-          trainingSessionService.saveExercise(sessionId, {
-            exerciseId: exercise.exercise.id,
-            orderIndex: exercise.orderIndex,
-          }),
-        ),
-      );
-
-      // Se agregan solo los sets marcados como realizados a los ejercicios recien creados
-      await Promise.all(
-        createdExercises.flatMap((createdExercise, index) =>
-          newExercises[index].sets
-            .filter((set) => completedSetIds.has(set.id))
-            .map((set) =>
-              trainingSessionService.saveExerciseSet(
-                sessionId,
-                createdExercise.id,
-                {
-                  setNumber: set.setNumber,
-                  weight: set.weight,
-                  reps: set.reps,
-                  notes: set.notes,
-                },
-              ),
-            ),
-        ),
-      );
-
-      // Se sincronizan los sets de ejercicios existentes dentro de la sesión
-      await Promise.all(
-        activeTrainingSession.exercises
-          .filter((exercise) => exercise.id > 0)
-          .flatMap((exercise) => {
-            const originalExercise = originalTrainingSession.exercises.find(
-              (original) => original.id === exercise.id,
-            );
-
-            // Sets a eliminar: borrados manualmente o no marcados como realizados
-            const deletedSets =
-              originalExercise?.sets.filter((original) => {
-                const current = exercise.sets.find(
-                  (set) => set.id === original.id,
-                );
-                return (
-                  current === undefined || !completedSetIds.has(original.id)
-                );
-              }) ?? [];
-
-            // Sets nuevos marcados como realizados
-            const newSets = exercise.sets.filter(
-              (set) => set.id < 0 && completedSetIds.has(set.id),
-            );
-
-            // Sets existentes marcados como realizados y modificados
-            const modifiedSets = exercise.sets.filter((set) => {
-              if (set.id < 0 || !completedSetIds.has(set.id)) return false;
-
-              const originalSet = originalExercise?.sets.find(
-                (original) => original.id === set.id,
-              );
-
-              return (
-                set.reps !== originalSet?.reps ||
-                set.weight !== originalSet?.weight ||
-                set.notes !== originalSet?.notes
-              );
-            });
-
-            return [
-              ...deletedSets.map((set) =>
-                trainingSessionService.deleteSetById(
-                  sessionId,
-                  exercise.id,
-                  set.id,
-                ),
-              ),
-              ...newSets.map((set) =>
-                trainingSessionService.saveExerciseSet(
-                  sessionId,
-                  exercise.id,
-                  {
-                    setNumber: set.setNumber,
-                    weight: set.weight,
-                    reps: set.reps,
-                    notes: set.notes,
-                  },
-                ),
-              ),
-              ...modifiedSets.map((set) =>
-                trainingSessionService.updateExerciseSet(
-                  sessionId,
-                  exercise.id,
-                  set,
-                ),
-              ),
-            ];
-          }),
-      );
+      await trainingSessionService.save({
+        routineId,
+        gymId,
+        notes: activeTrainingSession.notes,
+        exercises: activeTrainingSession.exercises
+          .map((ex) => ({
+            exerciseId: ex.exercise.id,
+            orderIndex: ex.orderIndex,
+            notes: ex.notes ?? "",
+            sets: ex.sets
+              .filter((set) => completedSetIds.has(set.id))
+              .map((set) => ({
+                setNumber: set.setNumber,
+                weight: set.weight,
+                reps: set.reps,
+                notes: set.notes,
+              })),
+          }))
+          .filter((ex) => ex.sets.length > 0),
+      });
 
       clearTrainingSession();
       navigation.reset({

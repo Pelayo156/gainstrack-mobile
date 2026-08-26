@@ -3,6 +3,8 @@ import { create } from "zustand";
 import { APIGainstrackTrainingSessionDetailResponse } from "../types/trainingSession.types";
 
 interface ActiveTrainingSessionStore {
+  routineId: number | null;
+  gymId: number | null;
   originalTrainingSession: APIGainstrackTrainingSessionDetailResponse | null;
   activeTrainingSession: APIGainstrackTrainingSessionDetailResponse | null;
   startTimestamp: number | null;
@@ -10,8 +12,12 @@ interface ActiveTrainingSessionStore {
   setStartTimestamp: (timestamp: number) => void;
   setActiveTrainingSession: (
     trainingSession: APIGainstrackTrainingSessionDetailResponse,
+    routineId: number,
+    gymId: number,
   ) => void;
   restoreTrainingSession: (state: {
+    routineId: number;
+    gymId: number;
     originalTrainingSession: APIGainstrackTrainingSessionDetailResponse;
     activeTrainingSession: APIGainstrackTrainingSessionDetailResponse;
     completedSetIds: number[];
@@ -27,6 +33,8 @@ interface ActiveTrainingSessionStore {
 
 const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
   (set, get) => ({
+    routineId: null,
+    gymId: null,
     originalTrainingSession: null,
     activeTrainingSession: null,
     startTimestamp: null,
@@ -39,7 +47,11 @@ const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
     },
     setActiveTrainingSession: async (
       trainingSession: APIGainstrackTrainingSessionDetailResponse,
+      routineId: number,
+      gymId: number,
     ) => {
+      await AsyncStorage.setItem("routineId", JSON.stringify(routineId));
+      await AsyncStorage.setItem("gymId", JSON.stringify(gymId));
       await AsyncStorage.setItem(
         "originalTrainingSession",
         JSON.stringify(trainingSession),
@@ -49,12 +61,16 @@ const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
         JSON.stringify(trainingSession),
       );
       set({
+        routineId,
+        gymId,
         originalTrainingSession: trainingSession,
         activeTrainingSession: trainingSession,
       });
     },
     restoreTrainingSession: (state) => {
       set({
+        routineId: state.routineId,
+        gymId: state.gymId,
         originalTrainingSession: state.originalTrainingSession,
         activeTrainingSession: state.activeTrainingSession,
         completedSetIds: new Set(state.completedSetIds),
@@ -75,11 +91,15 @@ const useActiveTrainingSessionStore = create<ActiveTrainingSessionStore>(
       set({ completedSetIds: next });
     },
     clearTrainingSession: async () => {
+      await AsyncStorage.removeItem("routineId");
+      await AsyncStorage.removeItem("gymId");
       await AsyncStorage.removeItem("originalTrainingSession");
       await AsyncStorage.removeItem("activeTrainingSession");
       await AsyncStorage.removeItem("startTimestamp");
       await AsyncStorage.removeItem("completedSetIds");
       set({
+        routineId: null,
+        gymId: null,
         originalTrainingSession: null,
         activeTrainingSession: null,
         startTimestamp: null,

@@ -35,6 +35,22 @@ export interface TrainingSessionSet {
 export interface APIGainstrackSaveTrainingSessionRequest {
   routineId: number;
   gymId: number | null;
+  notes: string | null;
+  exercises: APIGainstrackSaveTrainingSessionExercise[];
+}
+
+export interface APIGainstrackSaveTrainingSessionExercise {
+  exerciseId: number;
+  orderIndex: number;
+  notes: string;
+  sets: APIGainstrackSaveTrainingSessionExerciseSet[];
+}
+
+export interface APIGainstrackSaveTrainingSessionExerciseSet {
+  setNumber: number;
+  weight: number | null;
+  reps: number | null;
+  notes: null | string;
 }
 
 export interface APIGainsTrackSaveExerciseTrainingSessionRequest {
@@ -46,13 +62,6 @@ export interface APIGainstrackUpdateExerciseTrainingSessionRequest {
   exerciseId: number;
   orderIndex: number;
   notes: string;
-}
-
-export interface APIGainstrackSaveTrainingSessionExerciseSet {
-  setNumber: number;
-  weight: number | null;
-  reps: number | null;
-  notes: null | string;
 }
 
 export interface APIGainstrackUpdateTrainingSessionRequest {

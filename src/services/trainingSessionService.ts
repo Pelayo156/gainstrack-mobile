@@ -30,6 +30,15 @@ export const trainingSessionService = {
     );
     return response.data;
   },
+  preview: async (
+    routineId: number,
+    gymId: number,
+  ): Promise<APIGainstrackTrainingSessionDetailResponse> => {
+    const response = await apiClient.get(
+      `/sessions/preview?routineId=${routineId}&gymId=${gymId}`,
+    );
+    return response.data;
+  },
   save: async (saveRequest: APIGainstrackSaveTrainingSessionRequest) => {
     const response = await apiClient.post("/sessions", saveRequest);
     return response.data;

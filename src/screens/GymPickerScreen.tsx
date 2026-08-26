@@ -52,18 +52,33 @@ export default function GymPickerScreen({ route, navigation }: any) {
   }, []);
 
   const handleStartTrainingSession = async () => {
-    console.log("INICIO EVENTO COMENZAR SESIÓN DE ENTRENAMIENTO");
+    if (selectedGym === null) return;
 
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const response = await trainingSessionService.save({
-        routineId: routineId,
-        gymId: selectedGym?.id ?? null,
-      });
+      const response = await trainingSessionService.preview(
+        routineId,
+        selectedGym.id,
+      );
 
-      // Se guarda sesión recibida dentro de store
-      setActiveTrainingSession(response);
+      // Los ejercicios del preview no tienen ID de BD todavía; se asignan IDs
+      // negativos únicos para que las keys de React sean válidas y no colisionen
+      // con los ejercicios que el usuario agregue manualmente (-Date.now()).
+      const normalizedResponse = {
+        ...response,
+        exercises: response.exercises.map((ex, exIndex) => ({
+          ...ex,
+          id: -(exIndex + 1),
+          sets: ex.sets.map((set, setIndex) => ({
+            ...set,
+            id: -(exIndex * 1000 + setIndex + 1),
+          })),
+        })),
+      };
+
+      // Se guarda preview en store junto a routineId y gymId para el save final
+      setActiveTrainingSession(normalizedResponse, routineId, selectedGym.id);
 
       // Se redirige a usuario a ActiveSessionScreen
       navigation.replace("ActiveTrainingSession");
