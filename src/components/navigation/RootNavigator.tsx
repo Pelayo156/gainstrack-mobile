@@ -5,6 +5,7 @@ import useAuthStore from "../../store/useAuthStore";
 import AuthNavigator from "./AuthNavigator";
 import RoutineStackNavigator from "./RoutineStackNavigator";
 import HistoryStackNavigator from "./HistoryStackNavigator";
+import ProfileStackNavigator from "./ProfileStackNavigator";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
@@ -53,7 +54,8 @@ export default function RootNavigator() {
             getFocusedRouteNameFromRoute(route) === "EditRoutine" ||
             getFocusedRouteNameFromRoute(route) === "ExercisePicker" ||
             getFocusedRouteNameFromRoute(route) === "GymPicker" ||
-            getFocusedRouteNameFromRoute(route) === "ActiveTrainingSession"
+            getFocusedRouteNameFromRoute(route) === "ActiveTrainingSession" ||
+            getFocusedRouteNameFromRoute(route) === "TrainingSessionSummary"
               ? { display: "none" }
               : TAB_BAR_STYLE,
         })}
@@ -70,6 +72,15 @@ export default function RootNavigator() {
               ? { display: "none" }
               : TAB_BAR_STYLE,
         })}
+      />
+      <Tab.Screen
+        name="Perfil"
+        component={ProfileStackNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
       />
     </Tab.Navigator>
   ) : (

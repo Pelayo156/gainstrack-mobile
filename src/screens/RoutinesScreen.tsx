@@ -17,11 +17,11 @@ import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import { routineService } from "../services/routineService";
 import { Ionicons } from "@expo/vector-icons";
-import useAuthStore from "../store/useAuthStore";
 import Toast from "react-native-toast-message";
 import Popover from "react-native-popover-view";
 import { useFocusEffect } from "@react-navigation/native";
 import GlassCard from "../components/ui/GlassCard";
+import ScreenHeader from "../components/ui/ScreenHeader";
 import useActiveTrainingSessionStore from "../store/useActiveTrainingSessionStore";
 import ActiveSessionFAB from "../components/ui/ActiveSessionFAB";
 
@@ -38,8 +38,7 @@ function formatDate(date: Date): string {
 }
 
 export default function RoutineScreen({ navigation }: any) {
-  const { logout } = useAuthStore();
-  const { activeTrainingSession } = useActiveTrainingSessionStore();
+const { activeTrainingSession } = useActiveTrainingSessionStore();
   const { width } = useWindowDimensions();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -170,10 +169,11 @@ export default function RoutineScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            <View style={styles.header}>
-              <Text style={styles.mainTitle}>Rutinas</Text>
-              <Text style={styles.mainSubtitle}>TUS ENTRENAMIENTOS</Text>
-            </View>
+            <ScreenHeader
+              title="Rutinas"
+              subtitle="TUS ENTRENAMIENTOS"
+              style={styles.header}
+            />
 
             <TouchableOpacity
               onPress={handleOpenCreateRoutineModal}
@@ -314,11 +314,6 @@ export default function RoutineScreen({ navigation }: any) {
             </View>
           </GlassCard>
         )}
-        ListFooterComponent={
-          <TouchableOpacity onPress={logout} style={styles.startButton}>
-            <Text style={styles.startButtonText}>Cerrar Sesión</Text>
-          </TouchableOpacity>
-        }
       />
 
       <Modal
@@ -423,20 +418,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    alignItems: "center",
     marginBottom: 28,
-  },
-  mainTitle: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 38,
-    letterSpacing: 1.5,
-  },
-  mainSubtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 11,
-    letterSpacing: 3,
-    marginTop: 8,
   },
   errorBanner: {
     flexDirection: "row",
@@ -465,7 +447,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: H_PADDING,
-    paddingTop: 60,
+    paddingTop: 20,
     gap: CARD_GAP,
     paddingBottom: 32,
   },

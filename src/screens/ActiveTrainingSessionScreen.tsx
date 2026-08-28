@@ -24,9 +24,6 @@ import {
   TrainingSessionExercise,
   TrainingSessionSet,
 } from "../types/trainingSession.types";
-import { trainingSessionService } from "../services/trainingSessionService";
-import axios from "axios";
-import { APIGainstrackErrorResponse } from "../types/api.types";
 
 const H_PADDING = 20;
 
@@ -46,9 +43,6 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
   const [openExerciseMenuId, setOpenExerciseMenuId] = useState<number | null>(
     null,
   );
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { pickedExercise, clearPickedExercise } = useExercisePickerStore();
 
@@ -233,52 +227,8 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     }));
   };
 
-  const handleFinalizeSession = async () => {
-    if (activeTrainingSession === null || routineId === null || gymId === null) {
-      setErrorMessage("Hubo un problema al momento de finalizar la sesión.");
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      await trainingSessionService.save({
-        routineId,
-        gymId,
-        notes: activeTrainingSession.notes,
-        exercises: activeTrainingSession.exercises
-          .map((ex) => ({
-            exerciseId: ex.exercise.id,
-            orderIndex: ex.orderIndex,
-            notes: ex.notes ?? "",
-            sets: ex.sets
-              .filter((set) => completedSetIds.has(set.id))
-              .map((set) => ({
-                setNumber: set.setNumber,
-                weight: set.weight,
-                reps: set.reps,
-                notes: set.notes,
-              })),
-          }))
-          .filter((ex) => ex.sets.length > 0),
-      });
-
-      clearTrainingSession();
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Routines" }],
-      });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const apiError = error.response?.data as APIGainstrackErrorResponse;
-        setErrorMessage(apiError.message);
-      } else {
-        setErrorMessage("Error inesperado, intente nuevamente");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  const handleFinalizeSession = () => {
+    navigation.navigate("TrainingSessionSummary");
   };
 
   const formatTime = (seconds: number): string => {

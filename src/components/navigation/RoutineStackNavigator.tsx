@@ -4,6 +4,7 @@ import EditRoutineScreen from "../../screens/EditRoutineScreen";
 import ExercisePickerScreen from "@/src/screens/ExercisePickerScreen";
 import GymPickerScreen from "@/src/screens/GymPickerScreen";
 import ActiveTrainingSessionScreen from "@/src/screens/ActiveTrainingSessionScreen";
+import TrainingSessionSummaryScreen from "@/src/screens/TrainingSessionSummaryScreen";
 
 const Stack = createStackNavigator();
 
@@ -33,6 +34,11 @@ export default function RoutineStackNavigator() {
       <Stack.Screen
         name="ExercisePicker"
         component={ExercisePickerScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="TrainingSessionSummary"
+        component={TrainingSessionSummaryScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

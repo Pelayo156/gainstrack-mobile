@@ -13,6 +13,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import ActiveSessionFAB from "../components/ui/ActiveSessionFAB";
 import GlassCard from "../components/ui/GlassCard";
+import ScreenHeader from "../components/ui/ScreenHeader";
 import { routineService } from "../services/routineService";
 import { gymService } from "../services/gymService";
 import { trainingSessionService } from "../services/trainingSessionService";
@@ -47,11 +48,11 @@ export default function HistoryScreen({ navigation }: any) {
   const [selectedGym, setSelectedGym] =
     useState<APIGainsTrackGymResponse | null>(null);
 
-  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-  const [sessionsErrorMessage, setSessionsErrorMessage] = useState<
+  const [isLoadingTrainingSessions, setIsLoadingSessions] = useState(false);
+  const [trainingSessionsErrorMessage, setTrainingSessionsErrorMessage] = useState<
     string | null
   >(null);
-  const [sessions, setSessions] = useState<
+  const [trainingSessions, setTrainingSessions] = useState<
     APIGainstrackTrainingSessionSummaryResponse[]
   >([]);
 
@@ -89,53 +90,54 @@ export default function HistoryScreen({ navigation }: any) {
   /** Carga las sesiones de entrenamiento filtradas por la rutina y gimnasio seleccionados */
   useEffect(() => {
     if (selectedRoutine === null || selectedGym === null) {
-      setSessions([]);
+      setTrainingSessions([]);
       return;
     }
 
-    const fetchSessions = async () => {
+    const fetchTrainingSessions = async () => {
       setIsLoadingSessions(true);
-      setSessionsErrorMessage(null);
+      setTrainingSessionsErrorMessage(null);
       try {
         const response =
           await trainingSessionService.findfindAllByRoutineAndGym(
             selectedRoutine.id,
             selectedGym.id,
           );
-        setSessions(response);
+        setTrainingSessions(response);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           const apiError = error.response?.data as APIGainstrackErrorResponse;
-          setSessionsErrorMessage(apiError.message);
+          setTrainingSessionsErrorMessage(apiError.message);
         } else {
-          setSessionsErrorMessage("Error inesperado, intente nuevamente");
+          setTrainingSessionsErrorMessage("Error inesperado, intente nuevamente");
         }
       } finally {
         setIsLoadingSessions(false);
       }
     };
-    fetchSessions();
+    fetchTrainingSessions();
   }, [selectedRoutine, selectedGym]);
 
   const hasFilters = routines.length > 0 && gyms.length > 0;
-  const isLoading = isLoadingFilters || isLoadingSessions;
-  const errorMessage = filtersErrorMessage ?? sessionsErrorMessage;
+  const isLoading = isLoadingFilters || isLoadingTrainingSessions;
+  const errorMessage = filtersErrorMessage ?? trainingSessionsErrorMessage;
 
   return (
     <View style={styles.container}>
       <FlatList
         data={
-          !isLoading && errorMessage === null && hasFilters ? sessions : []
+          !isLoading && errorMessage === null && hasFilters ? trainingSessions : []
         }
-        keyExtractor={(session) => session.id.toString()}
+        keyExtractor={(trainingSession) => trainingSession.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            <View style={styles.header}>
-              <Text style={styles.title}>Historial</Text>
-              <Text style={styles.subtitle}>TUS SESIONES PASADAS</Text>
-            </View>
+            <ScreenHeader
+              title="Historial"
+              subtitle="TUS SESIONES PASADAS"
+              style={styles.header}
+            />
 
             {isLoadingFilters && (
               <ActivityIndicator
@@ -239,7 +241,7 @@ export default function HistoryScreen({ navigation }: any) {
             {!isLoadingFilters &&
               filtersErrorMessage === null &&
               hasFilters &&
-              isLoadingSessions && (
+              isLoadingTrainingSessions && (
                 <ActivityIndicator
                   color="#AAFF00"
                   size="large"
@@ -250,24 +252,24 @@ export default function HistoryScreen({ navigation }: any) {
             {!isLoadingFilters &&
               filtersErrorMessage === null &&
               hasFilters &&
-              !isLoadingSessions &&
-              sessionsErrorMessage !== null && (
+              !isLoadingTrainingSessions &&
+              trainingSessionsErrorMessage !== null && (
                 <View style={styles.errorBanner}>
                   <Ionicons
                     name="alert-circle-outline"
                     size={18}
                     color="rgba(255,90,90,0.9)"
                   />
-                  <Text style={styles.errorText}>{sessionsErrorMessage}</Text>
+                  <Text style={styles.errorText}>{trainingSessionsErrorMessage}</Text>
                 </View>
               )}
 
             {!isLoadingFilters &&
               filtersErrorMessage === null &&
               hasFilters &&
-              !isLoadingSessions &&
-              sessionsErrorMessage === null &&
-              sessions.length === 0 && (
+              !isLoadingTrainingSessions &&
+              trainingSessionsErrorMessage === null &&
+              trainingSessions.length === 0 && (
                 <View style={styles.emptyState}>
                   <Ionicons
                     name="time-outline"
@@ -281,21 +283,24 @@ export default function HistoryScreen({ navigation }: any) {
               )}
           </>
         }
-        renderItem={({ item: session }) => (
+        renderItem={({ item: trainingSession }) => (
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() =>
               navigation.navigate("TrainingSessionDetail", {
-                id: session.id,
+                id: trainingSession.id,
               })
             }
           >
             <GlassCard intensity="strong" style={styles.card}>
-              <Text style={styles.sessionDate}>
-                {formatDate(session.sessionDate)}
-              </Text>
-              <Text style={styles.sessionNotes} numberOfLines={3}>
-                {session.notes ?? "Sin notas"}
+              <View style={styles.trainingSessionMeta}>
+                <Text style={styles.trainingSessionDate}>
+                  {formatDate(trainingSession.sessionDate)}
+                </Text>
+                <Text style={styles.trainingSessionDate}>{trainingSession.duration} min</Text>
+              </View>
+              <Text style={styles.trainingSessionNotes} numberOfLines={3}>
+                {trainingSession.notes ?? "Sin notas"}
               </Text>
             </GlassCard>
           </TouchableOpacity>
@@ -316,20 +321,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#121212",
   },
   header: {
-    alignItems: "center",
     marginBottom: 28,
-  },
-  title: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 38,
-    letterSpacing: 1.5,
-  },
-  subtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 11,
-    letterSpacing: 3,
-    marginTop: 8,
   },
   listContent: {
     paddingHorizontal: H_PADDING,
@@ -404,13 +396,17 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 18,
   },
-  sessionDate: {
+  trainingSessionMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  trainingSessionDate: {
     color: "rgba(255,255,255,0.35)",
     fontSize: 11,
     letterSpacing: 0.3,
-    marginBottom: 10,
   },
-  sessionNotes: {
+  trainingSessionNotes: {
     color: "rgba(255,255,255,0.35)",
     fontSize: 13,
     lineHeight: 18,

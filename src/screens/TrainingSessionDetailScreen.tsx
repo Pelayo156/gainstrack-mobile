@@ -33,7 +33,7 @@ export default function TrainingSessionDetailScreen({
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [session, setSession] =
+  const [trainingSession, setTrainingSession] =
     useState<APIGainstrackTrainingSessionDetailResponse | null>(null);
 
   /** Carga el detalle de la sesión de entrenamiento seleccionada */
@@ -43,7 +43,7 @@ export default function TrainingSessionDetailScreen({
       setErrorMessage(null);
       try {
         const response = await trainingSessionService.findById(id);
-        setSession(response);
+        setTrainingSession(response);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           const apiError = error.response?.data as APIGainstrackErrorResponse;
@@ -90,7 +90,7 @@ export default function TrainingSessionDetailScreen({
         </View>
       )}
 
-      {!isLoading && errorMessage === null && session !== null && (
+      {!isLoading && errorMessage === null && trainingSession !== null && (
         <ScrollView
           style={styles.flex}
           contentContainerStyle={styles.scrollContent}
@@ -105,7 +105,7 @@ export default function TrainingSessionDetailScreen({
                 color="rgba(255,255,255,0.4)"
               />
               <Text style={styles.infoText} numberOfLines={1}>
-                {session.gym ? session.gym.name : "Sin gimnasio"}
+                {trainingSession.gym ? trainingSession.gym.name : "Sin gimnasio"}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -115,8 +115,16 @@ export default function TrainingSessionDetailScreen({
                 color="rgba(255,255,255,0.4)"
               />
               <Text style={styles.infoText}>
-                {formatDate(session.sessionDate)}
+                {formatDate(trainingSession.sessionDate)}
               </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Ionicons
+                name="time-outline"
+                size={16}
+                color="rgba(255,255,255,0.4)"
+              />
+              <Text style={styles.infoText}>{trainingSession.duration} min</Text>
             </View>
           </GlassCard>
 
@@ -131,12 +139,12 @@ export default function TrainingSessionDetailScreen({
               <Text style={styles.notesCardLabel}>Notas de la sesión</Text>
             </View>
             <Text style={styles.notesText}>
-              {session.notes ?? "Sin notas"}
+              {trainingSession.notes ?? "Sin notas"}
             </Text>
           </GlassCard>
 
           {/* Exercises */}
-          {session.exercises.length === 0 && (
+          {trainingSession.exercises.length === 0 && (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
                 Sin ejercicios registrados en esta sesión.
@@ -144,7 +152,7 @@ export default function TrainingSessionDetailScreen({
             </View>
           )}
 
-          {session.exercises
+          {trainingSession.exercises
             .slice()
             .sort((a, b) => a.orderIndex - b.orderIndex)
             .map((ex) => (

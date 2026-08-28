@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -70,20 +70,29 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
     navigation.goBack();
   };
 
+  const filteredExercises = useMemo(() => {
+    if (!searchQuery.trim()) return exercises;
+    const q = searchQuery.trim().toLowerCase();
+    return exercises.filter(
+      (e) =>
+        e.name.toLowerCase().includes(q) ||
+        e.muscleGroup.name.toLowerCase().includes(q),
+    );
+  }, [exercises, searchQuery]);
+
   return (
     <View style={styles.flex}>
       <View style={styles.headerBar}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.headerIconButton}
           activeOpacity={0.7}
+          style={styles.cancelButton}
         >
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
         </TouchableOpacity>
         <Text style={styles.headerBarTitle} numberOfLines={1}>
           Agregar ejercicio
         </Text>
-        <View style={styles.headerIconButton} />
       </View>
 
       <View style={styles.searchRow}>
@@ -137,7 +146,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
       {!isLoading && errorMessage === null && (
         <FlatList
-          data={exercises}
+          data={filteredExercises}
           keyExtractor={(exercise) => exercise.id.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -247,22 +256,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: H_PADDING,
     paddingBottom: 16,
   },
-  headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+  cancelButton: {
     backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#2A2A2A",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  cancelButtonText: {
+    color: "rgba(255,255,255,0.6)",
+    fontFamily: "Inter-Bold",
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
   headerBarTitle: {
-    flex: 1,
+    position: "absolute",
+    left: 0,
+    right: 0,
     color: "#FFFFFF",
     fontFamily: "Inter-Bold",
     fontSize: 16,
     letterSpacing: 0.3,
     textAlign: "center",
-    marginHorizontal: 12,
   },
   searchRow: {
     paddingHorizontal: H_PADDING,

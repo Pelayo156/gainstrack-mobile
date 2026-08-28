@@ -6,6 +6,7 @@ export interface APIGainstrackTrainingSessionSummaryResponse {
   gym: APIGainsTrackGymResponse;
   sessionDate: Date;
   notes: string;
+  duration: number;
 }
 
 export interface APIGainstrackTrainingSessionDetailResponse {
@@ -13,6 +14,7 @@ export interface APIGainstrackTrainingSessionDetailResponse {
   gym: APIGainsTrackGymResponse;
   sessionDate: Date;
   notes: string | null;
+  duration: number;
   exercises: TrainingSessionExercise[];
 }
 
@@ -36,6 +38,7 @@ export interface APIGainstrackSaveTrainingSessionRequest {
   routineId: number;
   gymId: number | null;
   notes: string | null;
+  duration: number;
   exercises: APIGainstrackSaveTrainingSessionExercise[];
 }
 
@@ -66,4 +69,5 @@ export interface APIGainstrackUpdateExerciseTrainingSessionRequest {
 
 export interface APIGainstrackUpdateTrainingSessionRequest {
   notes: string | null;
+  duration: number | null;
 }
