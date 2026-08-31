@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -18,8 +18,95 @@ import useAuthStore from "../store/useAuthStore";
 import { authService } from "../services/authService";
 import Toast from "react-native-toast-message";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
+
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: 32,
+      gap: 16,
+    },
+    header: {
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    textTitle: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 38,
+      letterSpacing: 1.5,
+    },
+    textSubtitle: {
+      color: t.textTertiary,
+      fontSize: 11,
+      letterSpacing: 3,
+      marginTop: 8,
+    },
+    card: {
+      backgroundColor: t.surface,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 18,
+      overflow: "hidden",
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+    },
+    icon: {
+      marginRight: 14,
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 20,
+    },
+    input: {
+      flex: 1,
+      color: t.textPrimary,
+      fontSize: 15,
+    },
+    registerButton: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 18,
+      marginTop: 6,
+    },
+    registerButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      textAlign: "center",
+      letterSpacing: 0.5,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+  });
+}
 
 export default function RegisterScreen() {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const { login } = useAuthStore();
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -71,7 +158,7 @@ export default function RegisterScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: "#121212" }}>
+      <View style={{ flex: 1, backgroundColor: t.background }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -86,7 +173,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name="person-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -96,7 +183,7 @@ export default function RegisterScreen() {
                   setErrorMessages([]);
                 }}
                 placeholder="Nombre"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 style={styles.input}
                 autoCapitalize="words"
               />
@@ -108,7 +195,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name="mail-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -118,7 +205,7 @@ export default function RegisterScreen() {
                   setErrorMessages([]);
                 }}
                 placeholder="Correo electrónico"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -131,7 +218,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name="lock-closed-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -141,7 +228,7 @@ export default function RegisterScreen() {
                   setErrorMessages([]);
                 }}
                 placeholder="Contraseña"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 secureTextEntry
                 style={styles.input}
               />
@@ -153,7 +240,7 @@ export default function RegisterScreen() {
               <Ionicons
                 name="shield-checkmark-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -163,7 +250,7 @@ export default function RegisterScreen() {
                   setErrorMessages([]);
                 }}
                 placeholder="Confirmar contraseña"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 secureTextEntry
                 style={styles.input}
               />
@@ -176,7 +263,7 @@ export default function RegisterScreen() {
                 <Ionicons
                   name="alert-circle-outline"
                   size={18}
-                  color="rgba(255,90,90,0.9)"
+                  color={t.errorText}
                 />
                 <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
@@ -197,83 +284,3 @@ export default function RegisterScreen() {
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  textTitle: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 38,
-    letterSpacing: 1.5,
-  },
-  textSubtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 11,
-    letterSpacing: 3,
-    marginTop: 8,
-  },
-  card: {
-    backgroundColor: "#1E1E1E",
-    borderColor: "#2A2A2A",
-    borderWidth: 1,
-    borderRadius: 18,
-    overflow: "hidden",
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  icon: {
-    marginRight: 14,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    marginHorizontal: 20,
-  },
-  input: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: 15,
-  },
-  registerButton: {
-    backgroundColor: "#AAFF00",
-    borderRadius: 12,
-    paddingVertical: 18,
-    marginTop: 6,
-  },
-  registerButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    textAlign: "center",
-    letterSpacing: 0.5,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-});

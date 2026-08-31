@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   findNodeHandle,
@@ -24,10 +24,367 @@ import {
   TrainingSessionExercise,
   TrainingSessionSet,
 } from "../types/trainingSession.types";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: H_PADDING,
+      paddingTop: 14,
+      paddingBottom: 14,
+    },
+    headerLeftGroup: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    backButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor: t.divider,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    timerCompact: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 7,
+    },
+    timerDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: t.primary,
+    },
+    timerText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 18,
+      letterSpacing: 1.5,
+    },
+    finalizeButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: t.primary,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    finalizeButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.2,
+    },
+    scrollContent: {
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    notesCard: {
+      borderRadius: 18,
+    },
+    notesCardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10,
+    },
+    notesCardLabel: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 11,
+      letterSpacing: 1,
+    },
+    notesInput: {
+      color: t.textPrimary,
+      fontSize: 14,
+      lineHeight: 19,
+      minHeight: 40,
+      textAlignVertical: "top",
+    },
+    emptyContainer: {
+      marginTop: 24,
+      alignItems: "center",
+    },
+    emptyText: {
+      color: t.textTertiary,
+      fontSize: 14,
+      letterSpacing: 0.5,
+    },
+    exerciseCard: {
+      borderRadius: 22,
+    },
+    exerciseHeaderRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    exerciseHeaderInfo: {
+      flex: 1,
+      gap: 8,
+    },
+    exerciseName: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      letterSpacing: 0.2,
+    },
+    muscleGroupPill: {
+      alignSelf: "flex-start",
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    muscleGroupPillText: {
+      color: t.textPrimary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+      letterSpacing: 0.5,
+    },
+    exerciseOrderBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: t.primaryMuted,
+      borderColor: "rgba(170,255,0,0.25)",
+      borderWidth: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    exerciseOrderBadgeText: {
+      color: t.textPrimary,
+      fontSize: 12,
+      fontFamily: "Inter-Bold",
+    },
+    exerciseOptionsButton: {
+      padding: 4,
+    },
+    exerciseNotesRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 12,
+    },
+    exerciseNotesIcon: {
+      marginTop: 1,
+    },
+    exerciseNotesInput: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 13,
+    },
+    setsDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginVertical: 14,
+    },
+    setsContainer: {
+      gap: 10,
+    },
+    setCard: {
+      borderRadius: 16,
+      padding: 12,
+    },
+    setHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 10,
+    },
+    setHeaderInfo: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    setBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 1,
+      borderColor: t.primaryBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    setBadgeText: {
+      color: t.primary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+    },
+    setLabel: {
+      color: t.textSecondary,
+      fontSize: 11,
+      letterSpacing: 1.5,
+      fontFamily: "Inter-Bold",
+    },
+    deleteSetButton: {
+      width: 26,
+      height: 26,
+      borderRadius: 8,
+      backgroundColor: "rgba(255,75,75,0.08)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    setInputsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    setInputGroup: {
+      flex: 1,
+      gap: 4,
+    },
+    setInputLabel: {
+      color: t.textTertiary,
+      fontSize: 10,
+      letterSpacing: 1,
+    },
+    setInput: {
+      color: t.textTertiary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      paddingVertical: 4,
+    },
+    setInputCompleted: {
+      color: t.textPrimary,
+    },
+    setInputDivider: {
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 16,
+      alignSelf: "stretch",
+    },
+    setNotesRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: t.divider,
+    },
+    setNotesInput: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 12,
+    },
+    popover: {
+      backgroundColor: t.surface,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.55,
+      shadowRadius: 16,
+      elevation: 12,
+      overflow: "hidden",
+      padding: 0,
+    },
+    popoverMenu: {
+      minWidth: 170,
+    },
+    popoverItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+    },
+    popoverItemDanger: {
+      color: "rgba(255,75,75,0.9)",
+      fontSize: 14,
+      letterSpacing: 0.2,
+    },
+    addSetButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingVertical: 10,
+      marginTop: 10,
+    },
+    addSetButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.5,
+    },
+    addExerciseButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 16,
+    },
+    addExerciseButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.5,
+    },
+    deleteSessionButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 5,
+      backgroundColor: "rgba(255,75,75,0.08)",
+      borderWidth: 1,
+      borderColor: "rgba(255,75,75,0.22)",
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    deleteSessionButtonText: {
+      color: "rgba(255,75,75,0.9)",
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.2,
+    },
+    checkButton: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      borderWidth: 1.5,
+      borderColor: t.surfaceBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    checkButtonCompleted: {
+      backgroundColor: t.primary,
+      borderColor: t.primary,
+    },
+  });
+}
+
 export default function ActiveTrainingSessionScreen({ navigation }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const {
     routineId,
     gymId,
@@ -250,7 +607,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
             activeOpacity={0.8}
             onPress={handleBackToMenu}
           >
-            <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={20} color={t.textPrimary} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -278,7 +635,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
           onPress={handleFinalizeSession}
         >
           <Text style={styles.finalizeButtonText}>Finalizar</Text>
-          <Ionicons name="checkmark" size={14} color="#0D0D0D" />
+          <Ionicons name="checkmark" size={14} color={t.primaryOnPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -300,14 +657,14 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                 <Ionicons
                   name="document-text-outline"
                   size={15}
-                  color="rgba(255,255,255,0.4)"
+                  color={t.textTertiary}
                 />
                 <Text style={styles.notesCardLabel}>Notas de la sesión</Text>
               </View>
               <TextInput
                 value={activeTrainingSession.notes ?? ""}
                 placeholder="Sin notas"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 style={styles.notesInput}
                 multiline
                 onFocus={handleInputFocus}
@@ -363,7 +720,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                           <Ionicons
                             name="ellipsis-vertical"
                             size={18}
-                            color="rgba(255,255,255,0.45)"
+                            color={t.textTertiary}
                           />
                         </TouchableOpacity>
                       )}
@@ -392,13 +749,13 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                     <Ionicons
                       name="create-outline"
                       size={13}
-                      color="rgba(255,255,255,0.3)"
+                      color={t.textTertiary}
                       style={styles.exerciseNotesIcon}
                     />
                     <TextInput
                       defaultValue={ex.notes ?? ""}
                       placeholder="Notas del ejercicio"
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor={t.textTertiary}
                       style={styles.exerciseNotesInput}
                       onFocus={handleInputFocus}
                     />
@@ -450,7 +807,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                                 value={set.weight?.toString() ?? ""}
                                 keyboardType="decimal-pad"
                                 placeholder="—"
-                                placeholderTextColor="rgba(255,255,255,0.2)"
+                                placeholderTextColor={t.textDisabled}
                                 style={[
                                   styles.setInput,
                                   completedSetIds.has(set.id) &&
@@ -471,7 +828,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                                 value={set.reps?.toString() ?? ""}
                                 keyboardType="number-pad"
                                 placeholder="—"
-                                placeholderTextColor="rgba(255,255,255,0.2)"
+                                placeholderTextColor={t.textDisabled}
                                 style={[
                                   styles.setInput,
                                   completedSetIds.has(set.id) &&
@@ -498,8 +855,8 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                                 size={15}
                                 color={
                                   completedSetIds.has(set.id)
-                                    ? "#0D0D0D"
-                                    : "rgba(255,255,255,0.2)"
+                                    ? t.primaryOnPrimary
+                                    : t.textDisabled
                                 }
                               />
                             </TouchableOpacity>
@@ -509,12 +866,12 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                             <Ionicons
                               name="document-text-outline"
                               size={12}
-                              color="rgba(255,255,255,0.3)"
+                              color={t.textTertiary}
                             />
                             <TextInput
                               defaultValue={set.notes ?? ""}
                               placeholder="Notas de la serie"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor={t.textTertiary}
                               style={styles.setNotesInput}
                               onFocus={handleInputFocus}
                             />
@@ -528,7 +885,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
                     activeOpacity={0.8}
                     onPress={() => handleAddSet(ex.id)}
                   >
-                    <Ionicons name="add" size={16} color="#AAFF00" />
+                    <Ionicons name="add" size={16} color={t.textPrimary} />
                     <Text style={styles.addSetButtonText}>Agregar serie</Text>
                   </TouchableOpacity>
                 </GlassCard>
@@ -539,7 +896,7 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
               activeOpacity={0.8}
               onPress={() => navigation.navigate("ExercisePicker")}
             >
-              <Ionicons name="add" size={20} color="#AAFF00" />
+              <Ionicons name="add" size={20} color={t.textPrimary} />
               <Text style={styles.addExerciseButtonText}>
                 Agregar ejercicio
               </Text>
@@ -550,353 +907,3 @@ export default function ActiveTrainingSessionScreen({ navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: H_PADDING,
-    paddingTop: 14,
-    paddingBottom: 14,
-  },
-  headerLeftGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timerCompact: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-  timerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#AAFF00",
-  },
-  timerText: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 18,
-    letterSpacing: 1.5,
-  },
-  finalizeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "#AAFF00",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  finalizeButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.2,
-  },
-  scrollContent: {
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  notesCard: {
-    borderRadius: 18,
-  },
-  notesCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  notesCardLabel: {
-    color: "rgba(255,255,255,0.4)",
-    fontFamily: "Inter-Bold",
-    fontSize: 11,
-    letterSpacing: 1,
-  },
-  notesInput: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    lineHeight: 19,
-    minHeight: 40,
-    textAlignVertical: "top",
-  },
-  emptyContainer: {
-    marginTop: 24,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 14,
-    letterSpacing: 0.5,
-  },
-  exerciseCard: {
-    borderRadius: 22,
-  },
-  exerciseHeaderRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  exerciseHeaderInfo: {
-    flex: 1,
-    gap: 8,
-  },
-  exerciseName: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    letterSpacing: 0.2,
-  },
-  muscleGroupPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(170,255,0,0.12)",
-    borderColor: "rgba(170,255,0,0.3)",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  muscleGroupPillText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-    letterSpacing: 0.5,
-  },
-  exerciseOrderBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "rgba(170,255,0,0.1)",
-    borderColor: "rgba(170,255,0,0.25)",
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exerciseOrderBadgeText: {
-    color: "rgba(253,230,138,0.9)",
-    fontSize: 12,
-    fontFamily: "Inter-Bold",
-  },
-  exerciseOptionsButton: {
-    padding: 4,
-  },
-  exerciseNotesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 12,
-  },
-  exerciseNotesIcon: {
-    marginTop: 1,
-  },
-  exerciseNotesInput: {
-    flex: 1,
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 13,
-  },
-  setsDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginVertical: 14,
-  },
-  setsContainer: {
-    gap: 10,
-  },
-  setCard: {
-    borderRadius: 16,
-    padding: 12,
-  },
-  setHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  setHeaderInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  setBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: "rgba(170,255,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  setBadgeText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-  },
-  setLabel: {
-    color: "rgba(253,230,138,0.65)",
-    fontSize: 11,
-    letterSpacing: 1.5,
-    fontFamily: "Inter-Bold",
-  },
-  deleteSetButton: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,75,75,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  setInputsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  setInputGroup: {
-    flex: 1,
-    gap: 4,
-  },
-  setInputLabel: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 10,
-    letterSpacing: 1,
-  },
-  setInput: {
-    color: "rgba(255,255,255,0.3)",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    paddingVertical: 4,
-  },
-  setInputCompleted: {
-    color: "#FFFFFF",
-  },
-  setInputDivider: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginHorizontal: 16,
-    alignSelf: "stretch",
-  },
-  setNotesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  setNotesInput: {
-    flex: 1,
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 12,
-  },
-  popover: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.55,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: "hidden",
-    padding: 0,
-  },
-  popoverMenu: {
-    minWidth: 170,
-  },
-  popoverItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  popoverItemDanger: {
-    color: "rgba(255,75,75,0.9)",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-  addSetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: "rgba(170,255,0,0.06)",
-    borderColor: "rgba(170,255,0,0.25)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    marginTop: 10,
-  },
-  addSetButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.5,
-  },
-  addExerciseButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "rgba(170,255,0,0.08)",
-    borderColor: "rgba(170,255,0,0.3)",
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 16,
-  },
-  addExerciseButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.5,
-  },
-  deleteSessionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "rgba(255,75,75,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255,75,75,0.22)",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  deleteSessionButtonText: {
-    color: "rgba(255,75,75,0.9)",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.2,
-  },
-  checkButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkButtonCompleted: {
-    backgroundColor: "#AAFF00",
-    borderColor: "#AAFF00",
-  },
-});

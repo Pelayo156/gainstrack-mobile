@@ -14,10 +14,211 @@ import { APIGainsTrackExerciseResponse } from "../types/exercise.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import useExercisePickerStore from "../store/useExercisePickerStore";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 16,
+    },
+    cancelButton: {
+      backgroundColor: t.divider,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    },
+    cancelButtonText: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.2,
+    },
+    headerBarTitle: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      letterSpacing: 0.3,
+      textAlign: "center",
+    },
+    searchRow: {
+      paddingHorizontal: H_PADDING,
+      marginBottom: 16,
+    },
+    searchInputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.surface,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    searchInput: {
+      flex: 1,
+      color: t.textPrimary,
+      fontSize: 15,
+    },
+    loadingIndicator: {
+      marginTop: 60,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      marginHorizontal: H_PADDING,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    listContent: {
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 16,
+      gap: 10,
+    },
+    emptyContainer: {
+      marginTop: 60,
+      alignItems: "center",
+      gap: 14,
+    },
+    emptyText: {
+      color: t.textTertiary,
+      fontSize: 14,
+      letterSpacing: 0.5,
+    },
+    exerciseCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      backgroundColor: t.surface,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 14,
+    },
+    exerciseCardSelected: {
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+    },
+    exerciseInfo: {
+      flex: 1,
+      gap: 8,
+    },
+    exerciseName: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.2,
+    },
+    exerciseNameSelected: {
+      color: t.textPrimary,
+    },
+    exerciseTagsRow: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    muscleGroupPill: {
+      alignSelf: "flex-start",
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    muscleGroupPillSelected: {
+      backgroundColor: "rgba(170,255,0,0.20)",
+      borderColor: "rgba(170,255,0,0.60)",
+    },
+    muscleGroupPillText: {
+      color: t.textPrimary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+      letterSpacing: 0.5,
+    },
+    predefinedPill: {
+      alignSelf: "flex-start",
+      backgroundColor: t.divider,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    predefinedPillText: {
+      color: t.textSecondary,
+      fontSize: 11,
+      letterSpacing: 0.5,
+    },
+    selectionCircle: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      borderWidth: 1.5,
+      borderColor: t.textDisabled,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    selectionCircleSelected: {
+      backgroundColor: t.primary,
+      borderColor: t.primary,
+    },
+    footer: {
+      paddingHorizontal: H_PADDING,
+      paddingVertical: 16,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: t.divider,
+    },
+    confirmButton: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: "center",
+    },
+    confirmButtonDisabled: {
+      backgroundColor: t.surfaceElevated,
+    },
+    confirmButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      letterSpacing: 0.5,
+    },
+    confirmButtonTextDisabled: {
+      color: t.textTertiary,
+    },
+  });
+}
+
 export default function ExercisePickerScreen({ route, navigation }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const { setPickedExercise } = useExercisePickerStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -100,13 +301,13 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
           <Ionicons
             name="search-outline"
             size={18}
-            color="rgba(255,255,255,0.35)"
+            color={t.textTertiary}
           />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Buscar ejercicio..."
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            placeholderTextColor={t.textTertiary}
             style={styles.searchInput}
             autoCapitalize="none"
           />
@@ -118,7 +319,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
               <Ionicons
                 name="close-circle"
                 size={18}
-                color="rgba(255,255,255,0.3)"
+                color={t.textTertiary}
               />
             </TouchableOpacity>
           )}
@@ -127,7 +328,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
 
       {isLoading && (
         <ActivityIndicator
-          color="#AAFF00"
+          color={t.primary}
           size="large"
           style={styles.loadingIndicator}
         />
@@ -138,7 +339,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
           <Ionicons
             name="alert-circle-outline"
             size={18}
-            color="rgba(255,90,90,0.9)"
+            color={t.errorText}
           />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
@@ -156,7 +357,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
               <Ionicons
                 name="barbell-outline"
                 size={40}
-                color="rgba(255,255,255,0.1)"
+                color={t.textDisabled}
               />
               <Text style={styles.emptyText}>No se encontraron ejercicios</Text>
             </View>
@@ -211,7 +412,7 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
                   ]}
                 >
                   {isSelected && (
-                    <Ionicons name="checkmark" size={16} color="#0D0D0D" />
+                    <Ionicons name="checkmark" size={16} color={t.primaryOnPrimary} />
                   )}
                 </View>
               </TouchableOpacity>
@@ -243,198 +444,3 @@ export default function ExercisePickerScreen({ route, navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 16,
-  },
-  cancelButton: {
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  cancelButtonText: {
-    color: "rgba(255,255,255,0.6)",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.2,
-  },
-  headerBarTitle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    letterSpacing: 0.3,
-    textAlign: "center",
-  },
-  searchRow: {
-    paddingHorizontal: H_PADDING,
-    marginBottom: 16,
-  },
-  searchInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "#1E1E1E",
-    borderColor: "#2A2A2A",
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  searchInput: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: 15,
-  },
-  loadingIndicator: {
-    marginTop: 60,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginHorizontal: H_PADDING,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  listContent: {
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 16,
-    gap: 10,
-  },
-  emptyContainer: {
-    marginTop: 60,
-    alignItems: "center",
-    gap: 14,
-  },
-  emptyText: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 14,
-    letterSpacing: 0.5,
-  },
-  exerciseCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#1E1E1E",
-    borderColor: "#2A2A2A",
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-  },
-  exerciseCardSelected: {
-    backgroundColor: "rgba(170,255,0,0.08)",
-    borderColor: "rgba(170,255,0,0.5)",
-  },
-  exerciseInfo: {
-    flex: 1,
-    gap: 8,
-  },
-  exerciseName: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.2,
-  },
-  exerciseNameSelected: {
-    color: "#AAFF00",
-  },
-  exerciseTagsRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  muscleGroupPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(170,255,0,0.10)",
-    borderColor: "rgba(170,255,0,0.30)",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  muscleGroupPillSelected: {
-    backgroundColor: "rgba(170,255,0,0.20)",
-    borderColor: "rgba(170,255,0,0.60)",
-  },
-  muscleGroupPillText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-    letterSpacing: 0.5,
-  },
-  predefinedPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderColor: "rgba(255,255,255,0.12)",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  predefinedPillText: {
-    color: "rgba(255,255,255,0.4)",
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  selectionCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  selectionCircleSelected: {
-    backgroundColor: "#AAFF00",
-    borderColor: "#AAFF00",
-  },
-
-  footer: {
-    paddingHorizontal: H_PADDING,
-    paddingVertical: 16,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  confirmButton: {
-    backgroundColor: "#AAFF00",
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  confirmButtonDisabled: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-  },
-  confirmButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
-  confirmButtonTextDisabled: {
-    color: "rgba(255,255,255,0.35)",
-  },
-});

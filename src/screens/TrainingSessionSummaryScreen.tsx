@@ -15,10 +15,129 @@ import ScreenHeader from "../components/ui/ScreenHeader";
 import { trainingSessionService } from "../services/trainingSessionService";
 import useActiveTrainingSessionStore from "../store/useActiveTrainingSessionStore";
 import { APIGainstrackErrorResponse } from "../types/api.types";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: H_PADDING,
+      paddingTop: 14,
+      paddingBottom: 14,
+    },
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
+    backButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.3,
+    },
+    scrollContent: {
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    titleSection: {
+      marginBottom: 8,
+    },
+    statsRow: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    statCard: {
+      flex: 1,
+      alignItems: "center",
+      gap: 6,
+      borderRadius: 18,
+    },
+    statValue: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 28,
+      letterSpacing: 0.5,
+    },
+    statLabel: {
+      color: t.textTertiary,
+      fontFamily: "Inter-Bold",
+      fontSize: 10,
+      letterSpacing: 1.5,
+    },
+    notesCard: {
+      borderRadius: 18,
+    },
+    notesCardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10,
+    },
+    notesCardLabel: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 11,
+      letterSpacing: 1,
+    },
+    notesInput: {
+      color: t.textPrimary,
+      fontSize: 14,
+      lineHeight: 19,
+      minHeight: 40,
+      textAlignVertical: "top",
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    confirmButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: t.primary,
+      borderRadius: 16,
+      paddingVertical: 18,
+      marginTop: 8,
+    },
+    confirmButtonDisabled: {
+      opacity: 0.6,
+    },
+    confirmButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      letterSpacing: 0.3,
+    },
+  });
+}
+
 export default function TrainingSessionSummaryScreen({ navigation }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const {
     routineId,
     gymId,
@@ -102,7 +221,7 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
           style={styles.backButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={20} color={t.textPrimary} />
           <Text style={styles.backButtonText}>Sesión</Text>
         </TouchableOpacity>
       </View>
@@ -117,12 +236,12 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
 
         <View style={styles.statsRow}>
           <GlassCard intensity="strong" style={styles.statCard}>
-            <Ionicons name="time-outline" size={22} color="#AAFF00" />
+            <Ionicons name="time-outline" size={22} color={t.primary} />
             <Text style={styles.statValue}>{duration}</Text>
             <Text style={styles.statLabel}>MIN</Text>
           </GlassCard>
           <GlassCard intensity="strong" style={styles.statCard}>
-            <Ionicons name="barbell-outline" size={22} color="#AAFF00" />
+            <Ionicons name="barbell-outline" size={22} color={t.primary} />
             <Text style={styles.statValue}>{completedExercises.length}</Text>
             <Text style={styles.statLabel}>EJERCICIOS</Text>
           </GlassCard>
@@ -130,7 +249,7 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
             <Ionicons
               name="checkmark-circle-outline"
               size={22}
-              color="#AAFF00"
+              color={t.primary}
             />
             <Text style={styles.statValue}>{totalSets}</Text>
             <Text style={styles.statLabel}>SERIES</Text>
@@ -161,7 +280,7 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
             <Ionicons
               name="alert-circle-outline"
               size={18}
-              color="rgba(255,90,90,0.9)"
+              color={t.errorText}
             />
             <Text style={styles.errorText}>{errorMessage}</Text>
           </View>
@@ -177,10 +296,10 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#0D0D0D" size="small" />
+            <ActivityIndicator color={t.primaryOnPrimary} size="small" />
           ) : (
             <>
-              <Ionicons name="checkmark-circle" size={18} color="#0D0D0D" />
+              <Ionicons name="checkmark-circle" size={18} color={t.primaryOnPrimary} />
               <Text style={styles.confirmButtonText}>Confirmar sesión</Text>
             </>
           )}
@@ -189,115 +308,3 @@ export default function TrainingSessionSummaryScreen({ navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: H_PADDING,
-    paddingTop: 14,
-    paddingBottom: 14,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  backButtonText: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.3,
-  },
-  scrollContent: {
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  titleSection: {
-    marginBottom: 8,
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  statCard: {
-    flex: 1,
-    alignItems: "center",
-    gap: 6,
-    borderRadius: 18,
-  },
-  statValue: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 28,
-    letterSpacing: 0.5,
-  },
-  statLabel: {
-    color: "rgba(255,255,255,0.35)",
-    fontFamily: "Inter-Bold",
-    fontSize: 10,
-    letterSpacing: 1.5,
-  },
-  notesCard: {
-    borderRadius: 18,
-  },
-  notesCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  notesCardLabel: {
-    color: "rgba(255,255,255,0.4)",
-    fontFamily: "Inter-Bold",
-    fontSize: 11,
-    letterSpacing: 1,
-  },
-  notesInput: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    lineHeight: 19,
-    minHeight: 40,
-    textAlignVertical: "top",
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  confirmButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#AAFF00",
-    borderRadius: 16,
-    paddingVertical: 18,
-    marginTop: 8,
-  },
-  confirmButtonDisabled: {
-    opacity: 0.6,
-  },
-  confirmButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    letterSpacing: 0.3,
-  },
-});

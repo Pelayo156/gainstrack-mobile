@@ -7,17 +7,9 @@ import RoutineStackNavigator from "./RoutineStackNavigator";
 import HistoryStackNavigator from "./HistoryStackNavigator";
 import ProfileStackNavigator from "./ProfileStackNavigator";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { useAppTheme } from "../../hooks/useAppTheme";
 
 const Tab = createBottomTabNavigator();
-
-const TAB_BAR_STYLE = {
-  backgroundColor: "#1A1A1A",
-  borderTopColor: "#2A2A2A",
-  borderTopWidth: 1,
-  height: 80,
-  paddingTop: 8,
-  paddingBottom: 24,
-};
 
 const TAB_BAR_LABEL_STYLE = {
   fontFamily: "Inter-Bold",
@@ -28,17 +20,27 @@ const TAB_BAR_LABEL_STYLE = {
 export default function RootNavigator() {
   const { token } = useAuthStore();
   const insets = useSafeAreaInsets();
+  const t = useAppTheme();
+
+  const tabBarStyle = {
+    backgroundColor: t.surface,
+    borderTopColor: t.surfaceBorder,
+    borderTopWidth: 1,
+    height: 80,
+    paddingTop: 8,
+    paddingBottom: 24,
+  };
 
   return token !== null ? (
     <Tab.Navigator
       screenOptions={{
-        tabBarStyle: TAB_BAR_STYLE,
-        tabBarActiveTintColor: "#AAFF00",
-        tabBarInactiveTintColor: "rgba(255,255,255,0.3)",
+        tabBarStyle,
+        tabBarActiveTintColor: t.primary,
+        tabBarInactiveTintColor: t.textTertiary,
         tabBarLabelStyle: TAB_BAR_LABEL_STYLE,
         headerShown: false,
         sceneStyle: {
-          backgroundColor: "#121212",
+          backgroundColor: t.background,
           paddingTop: insets.top + 12,
         },
       }}
@@ -57,7 +59,7 @@ export default function RootNavigator() {
             getFocusedRouteNameFromRoute(route) === "ActiveTrainingSession" ||
             getFocusedRouteNameFromRoute(route) === "TrainingSessionSummary"
               ? { display: "none" }
-              : TAB_BAR_STYLE,
+              : tabBarStyle,
         })}
       />
       <Tab.Screen
@@ -70,7 +72,7 @@ export default function RootNavigator() {
           tabBarStyle:
             getFocusedRouteNameFromRoute(route) === "TrainingSessionDetail"
               ? { display: "none" }
-              : TAB_BAR_STYLE,
+              : tabBarStyle,
         })}
       />
       <Tab.Screen

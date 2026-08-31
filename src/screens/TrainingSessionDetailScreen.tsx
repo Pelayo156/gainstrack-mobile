@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -13,6 +13,8 @@ import GlassCard from "../components/ui/GlassCard";
 import { trainingSessionService } from "../services/trainingSessionService";
 import { APIGainstrackTrainingSessionDetailResponse } from "../types/trainingSession.types";
 import { APIGainstrackErrorResponse } from "../types/api.types";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 
@@ -25,10 +27,249 @@ function formatDate(date: Date): string {
   });
 }
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: H_PADDING,
+      paddingTop: 14,
+      paddingBottom: 14,
+    },
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+    },
+    backButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.3,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      marginHorizontal: H_PADDING,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    scrollContent: {
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    infoCard: {
+      borderRadius: 18,
+      gap: 10,
+    },
+    infoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    infoText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 14,
+      letterSpacing: 0.2,
+    },
+    notesCard: {
+      borderRadius: 18,
+    },
+    notesCardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10,
+    },
+    notesCardLabel: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 11,
+      letterSpacing: 1,
+    },
+    notesText: {
+      color: t.textSecondary,
+      fontSize: 14,
+      lineHeight: 19,
+    },
+    emptyContainer: {
+      marginTop: 24,
+      alignItems: "center",
+    },
+    emptyText: {
+      color: t.textTertiary,
+      fontSize: 14,
+      letterSpacing: 0.5,
+      textAlign: "center",
+    },
+    exerciseCard: {
+      borderRadius: 22,
+    },
+    exerciseHeaderRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    exerciseHeaderInfo: {
+      flex: 1,
+      gap: 8,
+    },
+    exerciseName: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      letterSpacing: 0.2,
+    },
+    muscleGroupPill: {
+      alignSelf: "flex-start",
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    muscleGroupPillText: {
+      color: t.textPrimary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+      letterSpacing: 0.5,
+    },
+    exerciseOrderBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: t.primaryMuted,
+      borderColor: "rgba(170,255,0,0.25)",
+      borderWidth: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    exerciseOrderBadgeText: {
+      color: t.textPrimary,
+      fontSize: 12,
+      fontFamily: "Inter-Bold",
+    },
+    exerciseNotesRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 8,
+      marginTop: 12,
+    },
+    exerciseNotesIcon: {
+      marginTop: 1,
+    },
+    exerciseNotesText: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    setsDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginVertical: 14,
+    },
+    setsContainer: {
+      gap: 10,
+    },
+    setCard: {
+      borderRadius: 16,
+      padding: 12,
+    },
+    setHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10,
+    },
+    setBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 1,
+      borderColor: t.primaryBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    setBadgeText: {
+      color: t.primary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+    },
+    setLabel: {
+      color: t.textSecondary,
+      fontSize: 11,
+      letterSpacing: 1.5,
+      fontFamily: "Inter-Bold",
+    },
+    setInputsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    setInputGroup: {
+      flex: 1,
+      gap: 4,
+    },
+    setInputLabel: {
+      color: t.textTertiary,
+      fontSize: 10,
+      letterSpacing: 1,
+    },
+    setInputValue: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      paddingVertical: 4,
+    },
+    setInputDivider: {
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 16,
+      alignSelf: "stretch",
+    },
+    setNotesRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 6,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: t.divider,
+    },
+    setNotesText: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+  });
+}
+
 export default function TrainingSessionDetailScreen({
   route,
   navigation,
 }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const { id } = route.params;
 
   const [isLoading, setIsLoading] = useState(false);
@@ -66,14 +307,14 @@ export default function TrainingSessionDetailScreen({
           style={styles.backButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={20} color={t.textPrimary} />
           <Text style={styles.backButtonText}>Historial</Text>
         </TouchableOpacity>
       </View>
 
       {isLoading && (
         <ActivityIndicator
-          color="#AAFF00"
+          color={t.primary}
           size="large"
           style={{ marginTop: 40 }}
         />
@@ -84,7 +325,7 @@ export default function TrainingSessionDetailScreen({
           <Ionicons
             name="alert-circle-outline"
             size={18}
-            color="rgba(255,90,90,0.9)"
+            color={t.errorText}
           />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
@@ -102,7 +343,7 @@ export default function TrainingSessionDetailScreen({
               <Ionicons
                 name="location-outline"
                 size={16}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
               />
               <Text style={styles.infoText} numberOfLines={1}>
                 {trainingSession.gym ? trainingSession.gym.name : "Sin gimnasio"}
@@ -112,7 +353,7 @@ export default function TrainingSessionDetailScreen({
               <Ionicons
                 name="calendar-outline"
                 size={16}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
               />
               <Text style={styles.infoText}>
                 {formatDate(trainingSession.sessionDate)}
@@ -122,7 +363,7 @@ export default function TrainingSessionDetailScreen({
               <Ionicons
                 name="time-outline"
                 size={16}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
               />
               <Text style={styles.infoText}>{trainingSession.duration} min</Text>
             </View>
@@ -134,7 +375,7 @@ export default function TrainingSessionDetailScreen({
               <Ionicons
                 name="document-text-outline"
                 size={15}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
               />
               <Text style={styles.notesCardLabel}>Notas de la sesión</Text>
             </View>
@@ -180,7 +421,7 @@ export default function TrainingSessionDetailScreen({
                     <Ionicons
                       name="create-outline"
                       size={13}
-                      color="rgba(255,255,255,0.3)"
+                      color={t.textTertiary}
                       style={styles.exerciseNotesIcon}
                     />
                     <Text style={styles.exerciseNotesText}>{ex.notes}</Text>
@@ -235,7 +476,7 @@ export default function TrainingSessionDetailScreen({
                             <Ionicons
                               name="document-text-outline"
                               size={12}
-                              color="rgba(255,255,255,0.3)"
+                              color={t.textTertiary}
                             />
                             <Text style={styles.setNotesText}>
                               {set.notes}
@@ -252,237 +493,3 @@ export default function TrainingSessionDetailScreen({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: H_PADDING,
-    paddingTop: 14,
-    paddingBottom: 14,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  backButtonText: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.3,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginHorizontal: H_PADDING,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  scrollContent: {
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  infoCard: {
-    borderRadius: 18,
-    gap: 10,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  infoText: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-  notesCard: {
-    borderRadius: 18,
-  },
-  notesCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  notesCardLabel: {
-    color: "rgba(255,255,255,0.4)",
-    fontFamily: "Inter-Bold",
-    fontSize: 11,
-    letterSpacing: 1,
-  },
-  notesText: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 14,
-    lineHeight: 19,
-  },
-  emptyContainer: {
-    marginTop: 24,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 14,
-    letterSpacing: 0.5,
-    textAlign: "center",
-  },
-  exerciseCard: {
-    borderRadius: 22,
-  },
-  exerciseHeaderRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  exerciseHeaderInfo: {
-    flex: 1,
-    gap: 8,
-  },
-  exerciseName: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    letterSpacing: 0.2,
-  },
-  muscleGroupPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(170,255,0,0.12)",
-    borderColor: "rgba(170,255,0,0.3)",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  muscleGroupPillText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-    letterSpacing: 0.5,
-  },
-  exerciseOrderBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "rgba(170,255,0,0.1)",
-    borderColor: "rgba(170,255,0,0.25)",
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exerciseOrderBadgeText: {
-    color: "rgba(253,230,138,0.9)",
-    fontSize: 12,
-    fontFamily: "Inter-Bold",
-  },
-  exerciseNotesRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginTop: 12,
-  },
-  exerciseNotesIcon: {
-    marginTop: 1,
-  },
-  exerciseNotesText: {
-    flex: 1,
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  setsDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginVertical: 14,
-  },
-  setsContainer: {
-    gap: 10,
-  },
-  setCard: {
-    borderRadius: 16,
-    padding: 12,
-  },
-  setHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  setBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: "rgba(170,255,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  setBadgeText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-  },
-  setLabel: {
-    color: "rgba(253,230,138,0.65)",
-    fontSize: 11,
-    letterSpacing: 1.5,
-    fontFamily: "Inter-Bold",
-  },
-  setInputsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  setInputGroup: {
-    flex: 1,
-    gap: 4,
-  },
-  setInputLabel: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 10,
-    letterSpacing: 1,
-  },
-  setInputValue: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    paddingVertical: 4,
-  },
-  setInputDivider: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginHorizontal: 16,
-    alignSelf: "stretch",
-  },
-  setNotesRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 6,
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  setNotesText: {
-    flex: 1,
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 12,
-    lineHeight: 16,
-  },
-});

@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import { ReactNode } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { useAppTheme } from "../../hooks/useAppTheme";
+import { ThemeColors } from "../../theme";
 
 type GlassCardIntensity = "subtle" | "default" | "strong";
 
@@ -30,26 +33,31 @@ const INTENSITY_STYLES: Record<GlassCardIntensity, ViewStyle> = {
   },
 };
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    base: {
+      backgroundColor: t.surface,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      borderRadius: 20,
+      padding: 16,
+      overflow: "hidden",
+      shadowColor: "#000000",
+    },
+  });
+}
+
 export default function GlassCard({
   children,
   style,
   intensity = "default",
 }: GlassCardProps) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   return (
     <View style={[styles.base, INTENSITY_STYLES[intensity], style]}>
       {children}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  base: {
-    backgroundColor: "#1E1E1E",
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    borderRadius: 20,
-    padding: 16,
-    overflow: "hidden",
-    shadowColor: "#000000",
-  },
-});

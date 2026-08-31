@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { APIGainstrackRoutineSummaryResponse } from "../types/routine.types";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
@@ -24,6 +24,8 @@ import GlassCard from "../components/ui/GlassCard";
 import ScreenHeader from "../components/ui/ScreenHeader";
 import useActiveTrainingSessionStore from "../store/useActiveTrainingSessionStore";
 import ActiveSessionFAB from "../components/ui/ActiveSessionFAB";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 const CARD_GAP = 16;
@@ -37,8 +39,233 @@ function formatDate(date: Date): string {
   });
 }
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    centeredView: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.75)",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 20,
+    },
+    header: {
+      marginBottom: 28,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    emptyContainer: {
+      marginTop: 60,
+      alignItems: "center",
+    },
+    emptyText: {
+      color: t.textTertiary,
+      fontSize: 15,
+      letterSpacing: 1,
+    },
+    listContent: {
+      paddingHorizontal: H_PADDING,
+      paddingTop: 20,
+      gap: CARD_GAP,
+      paddingBottom: 32,
+    },
+    card: {
+      borderRadius: 24,
+      padding: 18,
+      justifyContent: "space-between",
+    },
+    cardTopRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: 8,
+    },
+    optionsButton: {
+      padding: 4,
+      marginLeft: 8,
+    },
+    popover: {
+      backgroundColor: t.surface,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.55,
+      shadowRadius: 16,
+      elevation: 12,
+      overflow: "hidden",
+      padding: 0,
+    },
+    popoverMenu: {
+      minWidth: 170,
+    },
+    popoverItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+    },
+    popoverItemText: {
+      color: t.textPrimary,
+      fontSize: 14,
+      letterSpacing: 0.2,
+    },
+    popoverItemDanger: {
+      color: "rgba(255,75,75,0.9)",
+      fontSize: 14,
+      letterSpacing: 0.2,
+    },
+    popoverDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+    },
+    routineName: {
+      flex: 1,
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.3,
+    },
+    routineNotes: {
+      color: t.textTertiary,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    routineDate: {
+      color: t.textDisabled,
+      fontSize: 10,
+      letterSpacing: 0.5,
+      marginBottom: 10,
+    },
+    openModalButton: {
+      backgroundColor: t.divider,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    openModalButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.5,
+    },
+    createButton: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    createButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      letterSpacing: 0.5,
+    },
+    startButton: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 10,
+      alignItems: "center",
+    },
+    startButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.5,
+    },
+    createRoutineModalView: {
+      width: "100%",
+      backgroundColor: t.surface,
+      borderRadius: 28,
+      padding: 24,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 24,
+    },
+    modalTitle: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 22,
+      letterSpacing: 0.5,
+    },
+    modalSubtitle: {
+      color: t.textTertiary,
+      fontSize: 10,
+      letterSpacing: 3,
+      marginTop: 4,
+    },
+    modalCloseBtn: {
+      padding: 4,
+    },
+    modalInputCard: {
+      borderRadius: 20,
+      padding: 0,
+      marginBottom: 20,
+    },
+    modalDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 20,
+    },
+    inputIcon: {
+      marginRight: 14,
+    },
+    input: {
+      flex: 1,
+      color: t.textPrimary,
+      fontSize: 15,
+    },
+    inputMultiline: {
+      textAlignVertical: "top",
+      paddingTop: 4,
+      minHeight: 60,
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+    },
+    cancelButton: {
+      paddingVertical: 14,
+      alignItems: "center",
+      marginTop: 4,
+    },
+    cancelButtonText: {
+      color: t.textDisabled,
+      fontSize: 14,
+      letterSpacing: 0.5,
+    },
+  });
+}
+
 export default function RoutineScreen({ navigation }: any) {
-const { activeTrainingSession } = useActiveTrainingSessionStore();
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
+  const { activeTrainingSession } = useActiveTrainingSessionStore();
   const { width } = useWindowDimensions();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -158,7 +385,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#121212" }}>
+    <View style={{ flex: 1, backgroundColor: t.background }}>
       <FlatList
         data={!isLoading && errorMessage === null ? routinesItems : []}
         keyExtractor={(routine) => routine.id.toString()}
@@ -185,7 +412,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
 
             {isLoading && (
               <ActivityIndicator
-                color="#AAFF00"
+                color={t.primary}
                 size="large"
                 style={{ marginTop: 40 }}
               />
@@ -196,7 +423,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                 <Ionicons
                   name="alert-circle-outline"
                   size={18}
-                  color="rgba(255,90,90,0.9)"
+                  color={t.errorText}
                 />
                 <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
@@ -239,7 +466,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                       <Ionicons
                         name="ellipsis-vertical"
                         size={18}
-                        color="rgba(255,255,255,0.45)"
+                        color={t.textTertiary}
                       />
                     </TouchableOpacity>
                   )}
@@ -260,7 +487,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                       <Ionicons
                         name="create-outline"
                         size={16}
-                        color="rgba(255,255,255,0.75)"
+                        color={t.textSecondary}
                       />
                       <Text style={styles.popoverItemText}>Editar</Text>
                     </TouchableOpacity>
@@ -272,7 +499,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                       <Ionicons
                         name="copy-outline"
                         size={16}
-                        color="rgba(255,255,255,0.75)"
+                        color={t.textSecondary}
                       />
                       <Text style={styles.popoverItemText}>Duplicar</Text>
                     </TouchableOpacity>
@@ -339,7 +566,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                   <Ionicons
                     name="close"
                     size={22}
-                    color="rgba(255,255,255,0.5)"
+                    color={t.textTertiary}
                   />
                 </TouchableOpacity>
               </View>
@@ -349,7 +576,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                   <Ionicons
                     name="barbell-outline"
                     size={18}
-                    color="rgba(255,255,255,0.4)"
+                    color={t.textTertiary}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -359,9 +586,9 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                       setErrorMessage(null);
                     }}
                     placeholder="Nombre de la rutina"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    placeholderTextColor={t.textTertiary}
                     style={styles.input}
-                    autoCapitalize="words"
+                    autoCapitalize="sentences"
                   />
                 </View>
                 <View style={styles.modalDivider} />
@@ -369,7 +596,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                   <Ionicons
                     name="document-text-outline"
                     size={18}
-                    color="rgba(255,255,255,0.4)"
+                    color={t.textTertiary}
                     style={styles.inputIcon}
                   />
                   <TextInput
@@ -379,7 +606,7 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
                       setErrorMessage(null);
                     }}
                     placeholder="Notas (opcional)"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    placeholderTextColor={t.textTertiary}
                     style={[styles.input, styles.inputMultiline]}
                     autoCapitalize="sentences"
                     multiline
@@ -408,223 +635,3 @@ const { activeTrainingSession } = useActiveTrainingSessionStore();
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.75)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginBottom: 28,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  emptyContainer: {
-    marginTop: 60,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 15,
-    letterSpacing: 1,
-  },
-  listContent: {
-    paddingHorizontal: H_PADDING,
-    paddingTop: 20,
-    gap: CARD_GAP,
-    paddingBottom: 32,
-  },
-  card: {
-    borderRadius: 24,
-    padding: 18,
-    justifyContent: "space-between",
-  },
-  cardTopRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  optionsButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  popover: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.55,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: "hidden",
-    padding: 0,
-  },
-  popoverMenu: {
-    minWidth: 170,
-  },
-  popoverItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  popoverItemText: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-  popoverItemDanger: {
-    color: "rgba(255,75,75,0.9)",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-  popoverDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  routineName: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.3,
-  },
-  routineNotes: {
-    color: "rgba(255,255,255,0.35)",
-    fontSize: 12,
-    lineHeight: 17,
-  },
-  routineDate: {
-    color: "rgba(255,255,255,0.2)",
-    fontSize: 10,
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  openModalButton: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderColor: "#2A2A2A",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  openModalButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.5,
-  },
-  createButton: {
-    backgroundColor: "#AAFF00",
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  createButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    letterSpacing: 0.5,
-  },
-  startButton: {
-    backgroundColor: "#AAFF00",
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  startButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.5,
-  },
-  createRoutineModalView: {
-    width: "100%",
-    backgroundColor: "#1A1A1A",
-    borderRadius: 28,
-    padding: 24,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 24,
-  },
-  modalTitle: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 22,
-    letterSpacing: 0.5,
-  },
-  modalSubtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 10,
-    letterSpacing: 3,
-    marginTop: 4,
-  },
-  modalCloseBtn: {
-    padding: 4,
-  },
-  modalInputCard: {
-    borderRadius: 20,
-    padding: 0,
-    marginBottom: 20,
-  },
-  modalDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    marginHorizontal: 20,
-  },
-  inputIcon: {
-    marginRight: 14,
-  },
-  input: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: 15,
-  },
-  inputMultiline: {
-    textAlignVertical: "top",
-    paddingTop: 4,
-    minHeight: 60,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  cancelButton: {
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 4,
-  },
-  cancelButtonText: {
-    color: "rgba(255,255,255,0.4)",
-    fontSize: 14,
-    letterSpacing: 0.5,
-  },
-});

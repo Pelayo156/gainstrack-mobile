@@ -7,3 +7,8 @@ export interface APIGainsTrackExerciseResponse {
   userId: number;
   isPredefined: boolean;
 }
+
+export interface APIGainsTrackExerciseRequest {
+  name: string;
+  muscleGroupId: number;
+}

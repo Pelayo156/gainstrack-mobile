@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -17,8 +17,119 @@ import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
 import { APIGainstrackErrorResponse } from "../types/api.types";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
+
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      paddingHorizontal: 32,
+      gap: 16,
+    },
+    header: {
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    textTitle: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 38,
+      letterSpacing: 1.5,
+    },
+    textSubtitle: {
+      color: t.textTertiary,
+      fontSize: 11,
+      letterSpacing: 3,
+      marginTop: 8,
+    },
+    card: {
+      backgroundColor: t.surface,
+      borderColor: t.surfaceBorder,
+      borderWidth: 1,
+      borderRadius: 18,
+      overflow: "hidden",
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+    },
+    icon: {
+      marginRight: 14,
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 20,
+    },
+    input: {
+      flex: 1,
+      color: t.textPrimary,
+      fontSize: 15,
+    },
+    loginButton: {
+      backgroundColor: t.primary,
+      borderRadius: 12,
+      paddingVertical: 18,
+      marginTop: 6,
+    },
+    loginButtonText: {
+      color: t.primaryOnPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      textAlign: "center",
+      letterSpacing: 0.5,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    registerText: {
+      color: t.textTertiary,
+      textAlign: "center",
+      fontSize: 13,
+      marginTop: 4,
+    },
+    socialContainer: {
+      alignItems: "center",
+      gap: 14,
+      marginTop: 8,
+    },
+    socialLabel: {
+      color: t.textDisabled,
+      fontSize: 11,
+      letterSpacing: 2,
+    },
+    googleButton: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: "#FFFFFF",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+  });
+}
 
 export default function LoginScreen({ navigation }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const { login } = useAuthStore();
 
   const [email, setEmail] = useState<string>("");
@@ -53,7 +164,7 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={{ flex: 1, backgroundColor: "#121212" }}>
+      <View style={{ flex: 1, backgroundColor: t.background }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.container}
@@ -68,7 +179,7 @@ export default function LoginScreen({ navigation }: any) {
               <Ionicons
                 name="mail-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -78,7 +189,7 @@ export default function LoginScreen({ navigation }: any) {
                   setErrorMessage(null);
                 }}
                 placeholder="Correo electrónico"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -91,7 +202,7 @@ export default function LoginScreen({ navigation }: any) {
               <Ionicons
                 name="lock-closed-outline"
                 size={18}
-                color="rgba(255,255,255,0.4)"
+                color={t.textTertiary}
                 style={styles.icon}
               />
               <TextInput
@@ -101,7 +212,7 @@ export default function LoginScreen({ navigation }: any) {
                   setErrorMessage(null);
                 }}
                 placeholder="Contraseña"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={t.textTertiary}
                 secureTextEntry
                 style={styles.input}
               />
@@ -113,7 +224,7 @@ export default function LoginScreen({ navigation }: any) {
               <Ionicons
                 name="alert-circle-outline"
                 size={18}
-                color="rgba(255,90,90,0.9)"
+                color={t.errorText}
               />
               <Text style={styles.errorText}>{errorMessage}</Text>
             </View>
@@ -156,107 +267,3 @@ export default function LoginScreen({ navigation }: any) {
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  textTitle: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 38,
-    letterSpacing: 1.5,
-  },
-  textSubtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 11,
-    letterSpacing: 3,
-    marginTop: 8,
-  },
-  card: {
-    backgroundColor: "#1E1E1E",
-    borderColor: "#2A2A2A",
-    borderWidth: 1,
-    borderRadius: 18,
-    overflow: "hidden",
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  icon: {
-    marginRight: 14,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    marginHorizontal: 20,
-  },
-  input: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontSize: 15,
-  },
-  loginButton: {
-    backgroundColor: "#AAFF00",
-    borderRadius: 12,
-    paddingVertical: 18,
-    marginTop: 6,
-  },
-  loginButtonText: {
-    color: "#0D0D0D",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    textAlign: "center",
-    letterSpacing: 0.5,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  registerText: {
-    color: "rgba(255,255,255,0.3)",
-    textAlign: "center",
-    fontSize: 13,
-    marginTop: 4,
-  },
-  socialContainer: {
-    alignItems: "center",
-    gap: 14,
-    marginTop: 8,
-  },
-  socialLabel: {
-    color: "rgba(255,255,255,0.2)",
-    fontSize: 11,
-    letterSpacing: 2,
-  },
-  googleButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

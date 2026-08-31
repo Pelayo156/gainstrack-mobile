@@ -5,6 +5,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useEffect } from "react";
+import { StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from "./src/components/ui/LoadingSpinner";
 import RootNavigator from "./src/components/navigation/RootNavigator";
@@ -14,11 +15,15 @@ import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import Toast from "react-native-toast-message";
 import useActiveTrainingSessionStore from "./src/store/useActiveTrainingSessionStore";
 import { APIGainstrackTrainingSessionDetailResponse } from "./src/types/trainingSession.types";
+import useThemeStore from "./src/store/useThemeStore";
+import { useAppTheme } from "./src/hooks/useAppTheme";
 
 function AppContent() {
   const insets = useSafeAreaInsets();
+  const t = useAppTheme();
   return (
     <>
+      <StatusBar barStyle={t.statusBar} backgroundColor={t.background} />
       <NavigationContainer>
         <RootNavigator />
       </NavigationContainer>
@@ -31,10 +36,15 @@ export default function App() {
   const { login, isLoading, setIsLoading } = useAuthStore();
   const { restoreTrainingSession, setStartTimestamp } =
     useActiveTrainingSessionStore();
+  const { init: initTheme, isLoading: themeLoading } = useThemeStore();
   const [fontsLoaded] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-Bold": Inter_700Bold,
   });
+
+  useEffect(() => {
+    initTheme();
+  }, []);
 
   useEffect(() => {
     const initialize = async () => {
@@ -90,7 +100,7 @@ export default function App() {
     initialize();
   }, []);
 
-  if (!fontsLoaded || isLoading) return <LoadingSpinner />;
+  if (!fontsLoaded || isLoading || themeLoading) return <LoadingSpinner />;
 
   return (
     <SafeAreaProvider>

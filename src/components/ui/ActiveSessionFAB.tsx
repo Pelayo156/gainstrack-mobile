@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import useActiveTrainingSessionStore from "../../store/useActiveTrainingSessionStore";
+import { useAppTheme } from "../../hooks/useAppTheme";
+import { ThemeColors } from "../../theme";
 
 type ActiveSessionFABProps = {
   onPress?: () => void;
@@ -15,9 +17,76 @@ type ActiveSessionFABProps = {
 
 const H_PADDING = 20;
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    fab: {
+      position: "absolute",
+      bottom: 20,
+      left: H_PADDING,
+      right: H_PADDING,
+      backgroundColor: t.surface,
+      borderWidth: 1.5,
+      borderColor: t.primary,
+      borderRadius: 16,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      gap: 4,
+      shadowColor: t.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      elevation: 10,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    statusRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: t.primary,
+    },
+    statusLabel: {
+      color: t.primary,
+      fontFamily: "Inter-Bold",
+      fontSize: 10,
+      letterSpacing: 2,
+    },
+    deleteButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      backgroundColor: "rgba(255,75,75,0.08)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    sessionName: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 12,
+      marginRight: 10,
+    },
+    timer: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 1,
+    },
+  });
+}
+
 export default function ActiveSessionFAB({ onPress }: ActiveSessionFABProps) {
   const { activeTrainingSession, startTimestamp, clearTrainingSession } =
     useActiveTrainingSessionStore();
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -76,66 +145,3 @@ export default function ActiveSessionFAB({ onPress }: ActiveSessionFABProps) {
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    bottom: 20,
-    left: H_PADDING,
-    right: H_PADDING,
-    backgroundColor: "#1E1E1E",
-    borderWidth: 1.5,
-    borderColor: "#AAFF00",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 4,
-    shadowColor: "#AAFF00",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 10,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#AAFF00",
-  },
-  statusLabel: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 10,
-    letterSpacing: 2,
-  },
-  deleteButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,75,75,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sessionName: {
-    flex: 1,
-    color: "rgba(255,255,255,0.55)",
-    fontSize: 12,
-    marginRight: 10,
-  },
-  timer: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 1,
-  },
-});

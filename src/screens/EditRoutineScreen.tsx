@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   findNodeHandle,
@@ -27,10 +27,378 @@ import { useFocusEffect } from "@react-navigation/native";
 import useExercisePickerStore from "../store/useExercisePickerStore";
 import Toast from "react-native-toast-message";
 import GlassCard from "../components/ui/GlassCard";
+import { useAppTheme } from "../hooks/useAppTheme";
+import { ThemeColors } from "../theme";
 
 const H_PADDING = 20;
 
+function getStyles(t: ThemeColors) {
+  return StyleSheet.create({
+    flex: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    headerBar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: H_PADDING,
+      paddingTop: 16,
+      paddingBottom: 16,
+    },
+    headerIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 12,
+      backgroundColor: t.divider,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerCancelButton: {
+      paddingHorizontal: 14,
+      height: 36,
+      borderRadius: 12,
+      backgroundColor: t.divider,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerCancelButtonText: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 14,
+      letterSpacing: 0.3,
+    },
+    headerBarTitle: {
+      flex: 1,
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 16,
+      letterSpacing: 0.3,
+      textAlign: "center",
+      marginHorizontal: 12,
+    },
+    loadingIndicator: {
+      marginTop: 60,
+    },
+    errorBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      backgroundColor: t.errorBg,
+      borderColor: t.errorBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      marginHorizontal: H_PADDING,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    errorText: {
+      flex: 1,
+      color: t.errorText,
+      fontSize: 14,
+    },
+    emptyContainer: {
+      marginTop: 40,
+      alignItems: "center",
+    },
+    emptyText: {
+      color: t.textTertiary,
+      fontSize: 14,
+      letterSpacing: 0.5,
+    },
+    scrollContent: {
+      paddingHorizontal: H_PADDING,
+      paddingBottom: 40,
+      gap: 16,
+    },
+    titleSection: {
+      marginBottom: 4,
+    },
+    routineTitle: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 28,
+      letterSpacing: 0.3,
+      padding: 0,
+    },
+    routineSubtitle: {
+      color: t.textTertiary,
+      fontSize: 11,
+      letterSpacing: 3,
+      marginTop: 6,
+    },
+    notesCard: {
+      borderRadius: 18,
+    },
+    notesCardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 10,
+    },
+    notesCardLabel: {
+      color: t.textSecondary,
+      fontFamily: "Inter-Bold",
+      fontSize: 11,
+      letterSpacing: 1,
+    },
+    notesInput: {
+      color: t.textPrimary,
+      fontSize: 14,
+      lineHeight: 19,
+      minHeight: 40,
+      textAlignVertical: "top",
+    },
+    exerciseCard: {
+      borderRadius: 22,
+    },
+    exerciseHeaderRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    exerciseHeaderInfo: {
+      flex: 1,
+      gap: 8,
+    },
+    exerciseOptionsButton: {
+      padding: 4,
+    },
+    exerciseName: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      letterSpacing: 0.2,
+    },
+    muscleGroupPill: {
+      alignSelf: "flex-start",
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 8,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    muscleGroupPillText: {
+      color: t.textPrimary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+      letterSpacing: 0.5,
+    },
+    exerciseOrderBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: t.primaryMuted,
+      borderColor: "rgba(170,255,0,0.25)",
+      borderWidth: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    exerciseOrderBadgeText: {
+      color: t.textPrimary,
+      fontSize: 12,
+      fontFamily: "Inter-Bold",
+    },
+    exerciseNotesRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 12,
+    },
+    exerciseNotesIcon: {
+      marginTop: 1,
+    },
+    exerciseNotesInput: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 13,
+    },
+    setsDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginVertical: 14,
+    },
+    setsContainer: {
+      gap: 10,
+    },
+    setCard: {
+      borderRadius: 16,
+      padding: 12,
+    },
+    setHeaderRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 10,
+    },
+    setHeaderInfo: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    deleteSetButton: {
+      width: 26,
+      height: 26,
+      borderRadius: 8,
+      backgroundColor: "rgba(255,75,75,0.08)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    setBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      borderWidth: 1,
+      borderColor: t.primaryBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    setBadgeText: {
+      color: t.primary,
+      fontSize: 11,
+      fontFamily: "Inter-Bold",
+    },
+    setLabel: {
+      color: t.textSecondary,
+      fontSize: 11,
+      letterSpacing: 1.5,
+      fontFamily: "Inter-Bold",
+    },
+    setInputsRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    setInputGroup: {
+      flex: 1,
+      gap: 4,
+    },
+    setInputLabel: {
+      color: t.textTertiary,
+      fontSize: 10,
+      letterSpacing: 1,
+    },
+    setInput: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 17,
+      paddingVertical: 4,
+    },
+    setInputDivider: {
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: t.divider,
+      marginHorizontal: 16,
+      alignSelf: "stretch",
+    },
+    setNotesRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: t.divider,
+    },
+    setNotesInput: {
+      flex: 1,
+      color: t.textSecondary,
+      fontSize: 12,
+    },
+    popover: {
+      backgroundColor: t.surface,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: t.surfaceBorder,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.55,
+      shadowRadius: 16,
+      elevation: 12,
+      overflow: "hidden",
+      padding: 0,
+    },
+    popoverMenu: {
+      minWidth: 170,
+    },
+    popoverItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+    },
+    popoverItemDanger: {
+      color: "rgba(255,75,75,0.9)",
+      fontSize: 14,
+      letterSpacing: 0.2,
+    },
+    addSetButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingVertical: 10,
+      marginTop: 10,
+    },
+    addSetButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 13,
+      letterSpacing: 0.5,
+    },
+    addExerciseButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: t.primaryMuted,
+      borderColor: t.primaryBorder,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 16,
+      marginTop: 4,
+    },
+    addExerciseButtonText: {
+      color: t.textPrimary,
+      fontFamily: "Inter-Bold",
+      fontSize: 15,
+      letterSpacing: 0.5,
+    },
+    keyboardToolbar: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      alignItems: "center",
+      backgroundColor: t.background,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: t.divider,
+      paddingHorizontal: H_PADDING,
+      paddingVertical: 8,
+    },
+    keyboardToolbarButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    keyboardToolbarButtonText: {
+      color: t.primary,
+      fontFamily: "Inter-Bold",
+      fontSize: 14,
+      letterSpacing: 0.3,
+    },
+  });
+}
+
 export default function EditRoutineScreen({ route, navigation }: any) {
+  const t = useAppTheme();
+  const styles = useMemo(() => getStyles(t), [t]);
+
   const { routineId } = route.params;
   const { pickedExercise, clearPickedExercise } = useExercisePickerStore();
 
@@ -385,13 +753,13 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           style={styles.headerIconButton}
           activeOpacity={0.7}
         >
-          <Ionicons name="checkmark" size={24} color="#AAFF00" />
+          <Ionicons name="checkmark" size={24} color={t.primary} />
         </TouchableOpacity>
       </View>
 
       {isLoading && (
         <ActivityIndicator
-          color="#AAFF00"
+          color={t.primary}
           size="large"
           style={styles.loadingIndicator}
         />
@@ -402,7 +770,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
           <Ionicons
             name="alert-circle-outline"
             size={18}
-            color="rgba(255,90,90,0.9)"
+            color={t.errorText}
           />
           <Text style={styles.errorText}>{errorMessage}</Text>
         </View>
@@ -426,7 +794,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   value={routine.name}
                   onChangeText={(newName) => handleUpdateRoutineName(newName)}
                   placeholder="Nombre de la rutina"
-                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  placeholderTextColor={t.textTertiary}
                   style={styles.routineTitle}
                 />
               </View>
@@ -436,7 +804,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   <Ionicons
                     name="document-text-outline"
                     size={15}
-                    color="rgba(255,255,255,0.4)"
+                    color={t.textTertiary}
                   />
                   <Text style={styles.notesCardLabel}>Notas de la rutina</Text>
                 </View>
@@ -446,7 +814,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     handleUpdateRoutineNotes(newNotes)
                   }
                   placeholder="Sin notas"
-                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  placeholderTextColor={t.textTertiary}
                   style={styles.notesInput}
                   multiline
                 />
@@ -497,7 +865,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                           <Ionicons
                             name="ellipsis-vertical"
                             size={18}
-                            color="rgba(255,255,255,0.45)"
+                            color={t.textTertiary}
                           />
                         </TouchableOpacity>
                       )}
@@ -525,13 +893,13 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     <Ionicons
                       name="create-outline"
                       size={13}
-                      color="rgba(255,255,255,0.3)"
+                      color={t.textTertiary}
                       style={styles.exerciseNotesIcon}
                     />
                     <TextInput
                       value={routineExercise.notes}
                       placeholder="Notas del ejercicio"
-                      placeholderTextColor="rgba(255,255,255,0.3)"
+                      placeholderTextColor={t.textTertiary}
                       style={styles.exerciseNotesInput}
                       onFocus={handleInputFocus}
                     />
@@ -590,7 +958,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                                 )
                               }
                               keyboardType="decimal-pad"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor={t.textTertiary}
                               style={styles.setInput}
                               onFocus={handleInputFocus}
                             />
@@ -610,7 +978,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                                 )
                               }
                               keyboardType="number-pad"
-                              placeholderTextColor="rgba(255,255,255,0.3)"
+                              placeholderTextColor={t.textTertiary}
                               style={styles.setInput}
                               onFocus={handleInputFocus}
                             />
@@ -621,12 +989,12 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                           <Ionicons
                             name="document-text-outline"
                             size={12}
-                            color="rgba(255,255,255,0.3)"
+                            color={t.textTertiary}
                           />
                           <TextInput
                             value={routineExerciseSet.notes ?? ""}
                             placeholder="Notas de la serie"
-                            placeholderTextColor="rgba(255,255,255,0.3)"
+                            placeholderTextColor={t.textTertiary}
                             style={styles.setNotesInput}
                             onFocus={handleInputFocus}
                           />
@@ -640,7 +1008,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                     activeOpacity={0.8}
                     onPress={() => handleAddSet(routineExercise.id)}
                   >
-                    <Ionicons name="add" size={16} color="#AAFF00" />
+                    <Ionicons name="add" size={16} color={t.textPrimary} />
                     <Text style={styles.addSetButtonText}>Agregar set</Text>
                   </TouchableOpacity>
                 </GlassCard>
@@ -653,7 +1021,7 @@ export default function EditRoutineScreen({ route, navigation }: any) {
                   navigation.navigate("ExercisePicker");
                 }}
               >
-                <Ionicons name="add" size={20} color="#AAFF00" />
+                <Ionicons name="add" size={20} color={t.textPrimary} />
                 <Text style={styles.addExerciseButtonText}>
                   Agregar ejercicio
                 </Text>
@@ -665,364 +1033,3 @@ export default function EditRoutineScreen({ route, navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-  headerBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: H_PADDING,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerCancelButton: {
-    paddingHorizontal: 14,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerCancelButtonText: {
-    color: "rgba(255,255,255,0.5)",
-    fontFamily: "Inter-Bold",
-    fontSize: 14,
-    letterSpacing: 0.3,
-  },
-  headerBarTitle: {
-    flex: 1,
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 16,
-    letterSpacing: 0.3,
-    textAlign: "center",
-    marginHorizontal: 12,
-  },
-  loadingIndicator: {
-    marginTop: 60,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(255,60,60,0.08)",
-    borderColor: "rgba(255,60,60,0.2)",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginHorizontal: H_PADDING,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  errorText: {
-    flex: 1,
-    color: "rgba(255,90,90,0.95)",
-    fontSize: 14,
-  },
-  emptyContainer: {
-    marginTop: 40,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 14,
-    letterSpacing: 0.5,
-  },
-  scrollContent: {
-    paddingHorizontal: H_PADDING,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  titleSection: {
-    marginBottom: 4,
-  },
-  routineTitle: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 28,
-    letterSpacing: 0.3,
-    padding: 0,
-  },
-  routineSubtitle: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 11,
-    letterSpacing: 3,
-    marginTop: 6,
-  },
-  notesCard: {
-    borderRadius: 18,
-  },
-  notesCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  notesCardLabel: {
-    color: "rgba(255,255,255,0.4)",
-    fontFamily: "Inter-Bold",
-    fontSize: 11,
-    letterSpacing: 1,
-  },
-  notesInput: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    lineHeight: 19,
-    minHeight: 40,
-    textAlignVertical: "top",
-  },
-  exerciseCard: {
-    borderRadius: 22,
-  },
-  exerciseHeaderRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  exerciseHeaderInfo: {
-    flex: 1,
-    gap: 8,
-  },
-  exerciseOptionsButton: {
-    padding: 4,
-  },
-  exerciseName: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    letterSpacing: 0.2,
-  },
-  muscleGroupPill: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(170,255,0,0.12)",
-    borderColor: "rgba(170,255,0,0.3)",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  muscleGroupPillText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-    letterSpacing: 0.5,
-  },
-  exerciseOrderBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "rgba(170,255,0,0.1)",
-    borderColor: "rgba(170,255,0,0.25)",
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exerciseOrderBadgeText: {
-    color: "rgba(253,230,138,0.9)",
-    fontSize: 12,
-    fontFamily: "Inter-Bold",
-  },
-  exerciseNotesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 12,
-  },
-  exerciseNotesIcon: {
-    marginTop: 1,
-  },
-  exerciseNotesInput: {
-    flex: 1,
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 13,
-  },
-  setsDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginVertical: 14,
-  },
-  setsContainer: {
-    gap: 10,
-  },
-  setCard: {
-    borderRadius: 16,
-    padding: 12,
-  },
-  setHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  setHeaderInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  deleteSetButton: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,75,75,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  setBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: "rgba(170,255,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  setBadgeText: {
-    color: "#AAFF00",
-    fontSize: 11,
-    fontFamily: "Inter-Bold",
-  },
-  setLabel: {
-    color: "rgba(253,230,138,0.65)",
-    fontSize: 11,
-    letterSpacing: 1.5,
-    fontFamily: "Inter-Bold",
-  },
-  setInputsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  setInputGroup: {
-    flex: 1,
-    gap: 4,
-  },
-  setInputLabel: {
-    color: "rgba(255,255,255,0.3)",
-    fontSize: 10,
-    letterSpacing: 1,
-  },
-  setInput: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-Bold",
-    fontSize: 17,
-    paddingVertical: 4,
-  },
-  setInputDivider: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    marginHorizontal: 16,
-    alignSelf: "stretch",
-  },
-  setNotesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.08)",
-  },
-  setNotesInput: {
-    flex: 1,
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 12,
-  },
-  popover: {
-    backgroundColor: "#1E1E1E",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#2A2A2A",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.55,
-    shadowRadius: 16,
-    elevation: 12,
-    overflow: "hidden",
-    padding: 0,
-  },
-  popoverMenu: {
-    minWidth: 170,
-  },
-  popoverItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  popoverItemDanger: {
-    color: "rgba(255,75,75,0.9)",
-    fontSize: 14,
-    letterSpacing: 0.2,
-  },
-  addSetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: "rgba(170,255,0,0.06)",
-    borderColor: "rgba(170,255,0,0.25)",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    marginTop: 10,
-  },
-  addSetButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 13,
-    letterSpacing: 0.5,
-  },
-  addExerciseButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "rgba(170,255,0,0.08)",
-    borderColor: "rgba(170,255,0,0.3)",
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 16,
-    marginTop: 4,
-  },
-  addExerciseButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 15,
-    letterSpacing: 0.5,
-  },
-  keyboardToolbar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    backgroundColor: "#121212",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: H_PADDING,
-    paddingVertical: 8,
-  },
-  keyboardToolbarButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  keyboardToolbarButtonText: {
-    color: "#AAFF00",
-    fontFamily: "Inter-Bold",
-    fontSize: 14,
-    letterSpacing: 0.3,
-  },
-});
